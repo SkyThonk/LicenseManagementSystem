@@ -9,6 +9,8 @@ public class User : Entity<UserId>
         UserId id,
         string email,
         string passwordHash,
+        string? firstName,
+        string? lastName,
         Role role,
         TenantId tenantId,
         bool isActive
@@ -16,6 +18,8 @@ public class User : Entity<UserId>
     {
         Email = email;
         PasswordHash = passwordHash;
+        FirstName = firstName;
+        LastName = lastName;
         Role = role;
         TenantId = tenantId;
         IsActive = isActive;
@@ -26,6 +30,8 @@ public class User : Entity<UserId>
 
     public string Email { get; private set; } = null!;
     public string PasswordHash { get; private set; } = null!;
+    public string? FirstName { get; private set; }
+    public string? LastName { get; private set; }
     public Role Role { get; private set; }
     public TenantId TenantId { get; private set; } = null!;
     public bool IsActive { get; private set; }
@@ -33,6 +39,8 @@ public class User : Entity<UserId>
     public static User Create(
         string email,
         string passwordHash,
+        string? firstName,
+        string? lastName,
         Role role,
         TenantId tenantId)
     {
@@ -40,10 +48,47 @@ public class User : Entity<UserId>
             new UserId(Guid.NewGuid()),
             email,
             passwordHash,
+            firstName,
+            lastName,
             role,
             tenantId,
             true);
     }
-}
 
-public record UserId(Guid Value);
+    public void UpdateEmail(string email)
+    {
+        Email = email;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateName(string? firstName, string? lastName)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateRole(Role role)
+    {
+        Role = role;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void UpdatePassword(string passwordHash)
+    {
+        PasswordHash = passwordHash;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Block()
+    {
+        IsActive = false;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Unblock()
+    {
+        IsActive = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
+}

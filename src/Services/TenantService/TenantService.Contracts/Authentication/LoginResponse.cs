@@ -1,8 +1,10 @@
 namespace TenantService.Contracts.Authentication;
 
 public record LoginResponse(
-    Guid EmployeeId,
-    string Name,
+    Guid UserId,
+    string Email,
+    string? FirstName,
+    string? LastName,
     string Role,
     string Token
 );

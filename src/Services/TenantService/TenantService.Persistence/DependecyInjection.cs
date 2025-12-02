@@ -11,7 +11,6 @@ using TenantService.Persistence.Common;
 using TenantService.Application.Common.Interfaces;
 using TenantService.Application.Common.Interfaces.Repositories;
 using TenantService.Persistence.Repositories;
-using TenantService.Persistence.Repositories;
 using TenantService.Persistence.Services;
 using Common.Domain.Abstractions;
 
@@ -62,6 +61,7 @@ public static class DependencyInjection
         // Register repositories - only Tenant repository for this microservice
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

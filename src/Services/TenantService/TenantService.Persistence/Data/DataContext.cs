@@ -1,6 +1,7 @@
 using Common.Domain.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using TenantService.Domain.User;
 
 
 namespace TenantService.Persistence.Data;
@@ -13,6 +14,8 @@ public class DataContext : DbContext
     {
         _domainEventDispatcher = domainEventDispatcher;
     }
+
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

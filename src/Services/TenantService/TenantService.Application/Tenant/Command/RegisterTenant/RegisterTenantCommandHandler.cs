@@ -80,7 +80,9 @@ public class RegisterTenantCommandHandler : ICommandHandler<RegisterTenantReques
         var user = User.Create(
             request.Email,
             passwordHash,
-            Role.Admin,
+            null, // firstName
+            null, // lastName
+            Role.TenantAdmin,
             tenant.Id
         );
 

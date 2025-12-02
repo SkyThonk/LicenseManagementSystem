@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Hosting;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 // builder.AddOpenTelemetryCollector("otel");
@@ -29,8 +31,16 @@ var kafkaSaslPassword = builder.Configuration["Kafka:SaslPassword"];
 
 // Register TenantService microservice with centralized configuration and fixed ports
 var tenantServiceApi = builder.AddProject<Projects.TenantService_Api>("TenantService")
-    .WithHttpEndpoint(port: 5002, name: "tenantservice-http")
-    .WithHttpsEndpoint(port: 7002, name: "tenantservice-https")
+    .WithHttpEndpoint(port: 5002, name: "tenantservice-http");
+
+// For local development, avoid exposing the microservice over HTTPS.
+// This prevents the Aspire host from listening on HTTPS for the service while in Development.
+if (!builder.Environment.IsDevelopment())
+{
+    // In non-development environments (e.g., staging/production), enable HTTPS endpoint
+    tenantServiceApi = tenantServiceApi.WithHttpsEndpoint(port: 7002, name: "tenantservice-https");
+}
+tenantServiceApi = tenantServiceApi
     .WithEnvironment("ConnectionStrings__SQL", tenantServiceConnectionString)
     .WithEnvironment("ConnectionStrings__redis", redisConnectionString)
     .WithEnvironment("Kafka__BootstrapServers", kafkaBootstrapServers)

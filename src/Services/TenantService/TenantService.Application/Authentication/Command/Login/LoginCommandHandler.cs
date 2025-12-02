@@ -1,6 +1,3 @@
-using Common.Application.Result;
-using Common.Application.Interfaces;
-using TenantService.Application.Common.Interfaces.Repositories;
 using TenantService.Application.Common.Interfaces.Authentication;
 using TenantService.Contracts.Authentication;
 
@@ -31,6 +28,12 @@ public class LoginCommandHandler : ICommandHandler<LoginRequest, LoginResponse>
             return Result<LoginResponse>.Failure(new ValidationError("Invalid email or password"));
         }
 
+        // Check if user is active
+        if (!user.IsActive)
+        {
+            return Result<LoginResponse>.Failure(new ValidationError("User account is blocked"));
+        }
+
         if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
         {
             return Result<LoginResponse>.Failure(new ValidationError("Invalid email or password"));
@@ -41,6 +44,8 @@ public class LoginCommandHandler : ICommandHandler<LoginRequest, LoginResponse>
         return Result<LoginResponse>.Success(new LoginResponse(
             user.Id.Value,
             user.Email,
+            user.FirstName,
+            user.LastName,
             user.Role.ToString(),
             token
         ));
