@@ -13,10 +13,6 @@ internal sealed class UserRepository : Repository<User, UserId>, IUserRepository
     {
     }
 
-    public async Task<User?> GetByIdAsync(UserId id, CancellationToken cancellationToken = default)
-    {
-        return await base.GetByIdAsync(id, cancellationToken);
-    }
 
     public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {

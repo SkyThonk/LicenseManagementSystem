@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Common/">
+    <Project Path="../../Common/Common.Application/Common.Application.csproj" />
+    <Project Path="../../Common/Common.Domain/Common.Domain.csproj" />
+    <Project Path="../../Common/Common.Infrastructure/Common.Infrastructure.csproj" />
+    <Project Path="../../Common/Common.Presentation/Common.Presentation.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/TenantService/">
+    <Project Path="TenantService.Api/TenantService.Api.csproj" />
+    <Project Path="TenantService.Application/TenantService.Application.csproj" />
+    <Project Path="TenantService.Contracts/TenantService.Contracts.csproj" />
+    <Project Path="TenantService.Domain/TenantService.Domain.csproj" />
+    <Project Path="TenantService.Infrastructure/TenantService.Infrastructure.csproj" />
+    <Project Path="TenantService.Persistence/TenantService.Persistence.csproj" />
+    <Project Path="TenantService.Tests/TenantService.Tests.csproj" />
+  </Folder>
+</Solution>

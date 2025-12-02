@@ -7,6 +7,7 @@ using TenantService.Contracts.Tenant.RegisterTenant;
 using TenantService.Domain.Tenant;
 using TenantService.Domain.User;
 using TenantService.Domain.Common.ValueObjects;
+using DomainUser = TenantService.Domain.User.User;
 
 namespace TenantService.Application.Tenant.Command.RegisterTenant;
 
@@ -77,7 +78,7 @@ public class RegisterTenantCommandHandler : ICommandHandler<RegisterTenantReques
 
         // Create the admin user for the tenant
         var passwordHash = _passwordHasher.Hash(request.Password);
-        var user = User.Create(
+        var user = DomainUser.Create(
             request.Email,
             passwordHash,
             null, // firstName

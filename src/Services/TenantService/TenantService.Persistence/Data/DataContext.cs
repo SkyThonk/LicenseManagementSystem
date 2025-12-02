@@ -1,6 +1,7 @@
 using Common.Domain.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using TenantService.Domain.PasswordResetToken;
 using TenantService.Domain.User;
 
 
