@@ -18,6 +18,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\Services\TenantService\TenantService.Api\TenantService.Api.csproj" />
+    <ProjectReference Include="..\src\Services\LicenseService\LicenseService.Api\LicenseService.Api.csproj" />
+    <ProjectReference Include="..\src\Services\DocumentService\DocumentService.Api\DocumentService.Api.csproj" />
+    <ProjectReference Include="..\src\Services\NotificationService\NotificationService.Api\NotificationService.Api.csproj" />
+    <ProjectReference Include="..\src\Services\PaymentService\PaymentService.Api\PaymentService.Api.csproj" />
   </ItemGroup>
 
 </Project>

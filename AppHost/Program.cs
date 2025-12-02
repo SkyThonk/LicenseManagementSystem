@@ -17,6 +17,18 @@ var userManagementConnectionString = builder.Configuration["UserManagement:Conne
 // TenantService Service connection string
 var tenantServiceConnectionString = builder.Configuration["TenantService:ConnectionStrings:SQL"];
 
+// LicenseService Service connection string
+var licenseServiceConnectionString = builder.Configuration["LicenseService:ConnectionStrings:SQL"];
+
+// DocumentService Service connection string
+var documentServiceConnectionString = builder.Configuration["DocumentService:ConnectionStrings:SQL"];
+
+// NotificationService Service connection string
+var notificationServiceConnectionString = builder.Configuration["NotificationService:ConnectionStrings:SQL"];
+
+// PaymentService Service connection string
+var paymentServiceConnectionString = builder.Configuration["PaymentService:ConnectionStrings:SQL"];
+
 // Get Redis connection string for external Redis Cloud
 var redisConnectionString = builder.Configuration["ConnectionStrings:redis"];
 
@@ -42,6 +54,90 @@ if (!builder.Environment.IsDevelopment())
 }
 tenantServiceApi = tenantServiceApi
     .WithEnvironment("ConnectionStrings__SQL", tenantServiceConnectionString)
+    .WithEnvironment("ConnectionStrings__redis", redisConnectionString)
+    .WithEnvironment("Kafka__BootstrapServers", kafkaBootstrapServers)
+    .WithEnvironment("Kafka__SecurityProtocol", kafkaSecurityProtocol)
+    .WithEnvironment("Kafka__SaslMechanism", kafkaSaslMechanism)
+    .WithEnvironment("Kafka__SaslUsername", kafkaSaslUsername)
+    .WithEnvironment("Kafka__SaslPassword", kafkaSaslPassword)
+    .WithEnvironment("JwtSettings__Secret", jwtSecret)
+    .WithEnvironment("JwtSettings__ExpiryMinutes", jwtExpiryMinutes)
+    .WithEnvironment("JwtSettings__Issuer", jwtIssuer)
+    .WithEnvironment("JwtSettings__Audience", jwtAudience);
+
+// Register LicenseService microservice with centralized configuration and fixed ports
+var licenseServiceApi = builder.AddProject<Projects.LicenseService_Api>("LicenseService")
+    .WithHttpEndpoint(port: 5003, name: "licenseservice-http");
+
+if (!builder.Environment.IsDevelopment())
+{
+    licenseServiceApi = licenseServiceApi.WithHttpsEndpoint(port: 7003, name: "licenseservice-https");
+}
+licenseServiceApi = licenseServiceApi
+    .WithEnvironment("ConnectionStrings__SQL", licenseServiceConnectionString)
+    .WithEnvironment("ConnectionStrings__redis", redisConnectionString)
+    .WithEnvironment("Kafka__BootstrapServers", kafkaBootstrapServers)
+    .WithEnvironment("Kafka__SecurityProtocol", kafkaSecurityProtocol)
+    .WithEnvironment("Kafka__SaslMechanism", kafkaSaslMechanism)
+    .WithEnvironment("Kafka__SaslUsername", kafkaSaslUsername)
+    .WithEnvironment("Kafka__SaslPassword", kafkaSaslPassword)
+    .WithEnvironment("JwtSettings__Secret", jwtSecret)
+    .WithEnvironment("JwtSettings__ExpiryMinutes", jwtExpiryMinutes)
+    .WithEnvironment("JwtSettings__Issuer", jwtIssuer)
+    .WithEnvironment("JwtSettings__Audience", jwtAudience);
+
+// Register DocumentService microservice with centralized configuration and fixed ports
+var documentServiceApi = builder.AddProject<Projects.DocumentService_Api>("DocumentService")
+    .WithHttpEndpoint(port: 5004, name: "documentservice-http");
+
+if (!builder.Environment.IsDevelopment())
+{
+    documentServiceApi = documentServiceApi.WithHttpsEndpoint(port: 7004, name: "documentservice-https");
+}
+documentServiceApi = documentServiceApi
+    .WithEnvironment("ConnectionStrings__SQL", documentServiceConnectionString)
+    .WithEnvironment("ConnectionStrings__redis", redisConnectionString)
+    .WithEnvironment("Kafka__BootstrapServers", kafkaBootstrapServers)
+    .WithEnvironment("Kafka__SecurityProtocol", kafkaSecurityProtocol)
+    .WithEnvironment("Kafka__SaslMechanism", kafkaSaslMechanism)
+    .WithEnvironment("Kafka__SaslUsername", kafkaSaslUsername)
+    .WithEnvironment("Kafka__SaslPassword", kafkaSaslPassword)
+    .WithEnvironment("JwtSettings__Secret", jwtSecret)
+    .WithEnvironment("JwtSettings__ExpiryMinutes", jwtExpiryMinutes)
+    .WithEnvironment("JwtSettings__Issuer", jwtIssuer)
+    .WithEnvironment("JwtSettings__Audience", jwtAudience);
+
+// Register NotificationService microservice with centralized configuration and fixed ports
+var notificationServiceApi = builder.AddProject<Projects.NotificationService_Api>("NotificationService")
+    .WithHttpEndpoint(port: 5005, name: "notificationservice-http");
+
+if (!builder.Environment.IsDevelopment())
+{
+    notificationServiceApi = notificationServiceApi.WithHttpsEndpoint(port: 7005, name: "notificationservice-https");
+}
+notificationServiceApi = notificationServiceApi
+    .WithEnvironment("ConnectionStrings__SQL", notificationServiceConnectionString)
+    .WithEnvironment("ConnectionStrings__redis", redisConnectionString)
+    .WithEnvironment("Kafka__BootstrapServers", kafkaBootstrapServers)
+    .WithEnvironment("Kafka__SecurityProtocol", kafkaSecurityProtocol)
+    .WithEnvironment("Kafka__SaslMechanism", kafkaSaslMechanism)
+    .WithEnvironment("Kafka__SaslUsername", kafkaSaslUsername)
+    .WithEnvironment("Kafka__SaslPassword", kafkaSaslPassword)
+    .WithEnvironment("JwtSettings__Secret", jwtSecret)
+    .WithEnvironment("JwtSettings__ExpiryMinutes", jwtExpiryMinutes)
+    .WithEnvironment("JwtSettings__Issuer", jwtIssuer)
+    .WithEnvironment("JwtSettings__Audience", jwtAudience);
+
+// Register PaymentService microservice with centralized configuration and fixed ports
+var paymentServiceApi = builder.AddProject<Projects.PaymentService_Api>("PaymentService")
+    .WithHttpEndpoint(port: 5006, name: "paymentservice-http");
+
+if (!builder.Environment.IsDevelopment())
+{
+    paymentServiceApi = paymentServiceApi.WithHttpsEndpoint(port: 7006, name: "paymentservice-https");
+}
+paymentServiceApi = paymentServiceApi
+    .WithEnvironment("ConnectionStrings__SQL", paymentServiceConnectionString)
     .WithEnvironment("ConnectionStrings__redis", redisConnectionString)
     .WithEnvironment("Kafka__BootstrapServers", kafkaBootstrapServers)
     .WithEnvironment("Kafka__SecurityProtocol", kafkaSecurityProtocol)

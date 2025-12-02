@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Common/">
+    <Project Path="../../Common/Common.Application/Common.Application.csproj" />
+    <Project Path="../../Common/Common.Domain/Common.Domain.csproj" />
+    <Project Path="../../Common/Common.Infrastructure/Common.Infrastructure.csproj" />
+    <Project Path="../../Common/Common.Presentation/Common.Presentation.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/LicenseService/">
+    <Project Path="LicenseService.Api/LicenseService.Api.csproj" />
+    <Project Path="LicenseService.Application/LicenseService.Application.csproj" />
+    <Project Path="LicenseService.Contracts/LicenseService.Contracts.csproj" />
+    <Project Path="LicenseService.Domain/LicenseService.Domain.csproj" />
+    <Project Path="LicenseService.Infrastructure/LicenseService.Infrastructure.csproj" />
+    <Project Path="LicenseService.Persistence/LicenseService.Persistence.csproj" />
+    <Project Path="LicenseService.Tests/LicenseService.Tests.csproj" />
+  </Folder>
+</Solution>

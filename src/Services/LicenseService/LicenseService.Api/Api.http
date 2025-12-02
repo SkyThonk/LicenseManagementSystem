@@ -1,0 +1,16 @@
+@LicenseService.Api_HostAddress = http://localhost:5200
+
+### Health Check
+GET {{LicenseService.Api_HostAddress}}/api/health
+
+### Get All Licenses (requires authentication)
+GET {{LicenseService.Api_HostAddress}}/api/licenses
+Authorization: Bearer {{token}}
+
+### Get License by ID
+GET {{LicenseService.Api_HostAddress}}/api/licenses/{{licenseId}}
+Authorization: Bearer {{token}}
+
+### Get All License Types
+GET {{LicenseService.Api_HostAddress}}/api/licensetypes
+Authorization: Bearer {{token}}
