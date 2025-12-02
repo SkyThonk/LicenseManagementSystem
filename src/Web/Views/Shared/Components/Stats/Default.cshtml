@@ -1,0 +1,37 @@
+@model LicenseManagement.Web.ViewComponents.StatsCardViewModel
+
+<div class="stat-card">
+    <div class="stat-card-header">
+        <div class="stat-card-icon @Model.IconColor">
+            <i class="@Model.Icon"></i>
+        </div>
+    </div>
+    <div class="stat-card-value">@Model.Value</div>
+    <div class="stat-card-label">@Model.Title</div>
+    @if (!string.IsNullOrEmpty(Model.ChangeValue))
+    {
+        <div class="stat-card-change @(Model.IsPositiveChange ? "positive" : "negative")">
+            <i class="fas @(Model.IsPositiveChange ? "fa-arrow-up" : "fa-arrow-down")"></i>
+            <span>@Model.ChangeValue</span>
+            @if (!string.IsNullOrEmpty(Model.ChangeText))
+            {
+                <span class="stat-card-change-text">@Model.ChangeText</span>
+            }
+        </div>
+    }
+    @if (Model.ProgressValue.HasValue)
+    {
+        <div class="stat-card-progress">
+            <div class="stat-card-progress-bar">
+                <div class="stat-card-progress-fill @(Model.ProgressColor ?? "primary")" style="width: @(Model.ProgressValue)%"></div>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.ProgressText))
+            {
+                <div class="stat-card-progress-text">
+                    <span>@Model.ProgressText</span>
+                    <span>@(Model.ProgressValue)%</span>
+                </div>
+            }
+        </div>
+    }
+</div>

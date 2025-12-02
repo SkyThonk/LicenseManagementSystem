@@ -1,0 +1,246 @@
+@model LicenseManagement.Web.ViewModels.Tenants.TenantFormViewModel
+@{
+    var isEdit = Model.Id.HasValue;
+    ViewData["Title"] = isEdit ? "Edit Tenant" : "Create Tenant";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-left">
+        <a href="@(isEdit ? $"/tenants/{Model.Id}" : "/tenants")" class="btn btn-sm btn-outline mb-3">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        <p class="page-subtitle">@(isEdit ? "Update tenant information" : "Add a new tenant organization")</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post" asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@Model.Id">
+            @Html.AntiForgeryToken()
+            
+            <!-- Basic Information -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">Basic Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label form-label-required" for="Name">Organization Name</label>
+                        <input type="text" 
+                               id="Name" 
+                               name="Name" 
+                               value="@Model.Name" 
+                               class="form-control @(ViewData.ModelState["Name"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                               placeholder="Enter organization name"
+                               required />
+                        <span asp-validation-for="Name" class="invalid-feedback"></span>
+                    </div>
+
+                    <div class="form-row form-row-2">
+                        <div class="form-group">
+                            <label class="form-label form-label-required" for="Email">Email Address</label>
+                            <input type="email" 
+                                   id="Email" 
+                                   name="Email" 
+                                   value="@Model.Email" 
+                                   class="form-control @(ViewData.ModelState["Email"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                   placeholder="Enter email address"
+                                   required />
+                            <span asp-validation-for="Email" class="invalid-feedback"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="Phone">
+                                Phone Number
+                                <span class="form-label-optional">(optional)</span>
+                            </label>
+                            <input type="tel" 
+                                   id="Phone" 
+                                   name="Phone" 
+                                   value="@Model.Phone" 
+                                   class="form-control" 
+                                   placeholder="Enter phone number" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">Address Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label" for="Address">
+                            Street Address
+                            <span class="form-label-optional">(optional)</span>
+                        </label>
+                        <input type="text" 
+                               id="Address" 
+                               name="Address" 
+                               value="@Model.Address" 
+                               class="form-control" 
+                               placeholder="Enter street address" />
+                    </div>
+
+                    <div class="form-row form-row-2">
+                        <div class="form-group">
+                            <label class="form-label" for="City">
+                                City
+                                <span class="form-label-optional">(optional)</span>
+                            </label>
+                            <input type="text" 
+                                   id="City" 
+                                   name="City" 
+                                   value="@Model.City" 
+                                   class="form-control" 
+                                   placeholder="Enter city" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="Country">
+                                Country
+                                <span class="form-label-optional">(optional)</span>
+                            </label>
+                            <select id="Country" name="Country" class="form-select">
+                                <option value="">Select country</option>
+                                @{
+                                    var countries = new[] { "United States", "Canada", "United Kingdom", "Germany", "France", "Australia", "Japan", "Other" };
+                                }
+                                @foreach (var country in countries)
+                                {
+                                    if (Model.Country == country)
+                                    {
+                                        <option value="@country" selected>@country</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@country">@country</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions form-actions-right">
+                <a href="@(isEdit ? $"/tenants/{Model.Id}" : "/tenants")" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    @(isEdit ? "Update Tenant" : "Create Tenant")
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sidebar Help -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Need Help?</h3>
+            </div>
+            <div class="card-body">
+                <div class="help-section">
+                    <h4><i class="fas fa-info-circle"></i> About Tenants</h4>
+                    <p>Tenants represent organizations or companies that use your license management system.</p>
+                </div>
+                <div class="help-section">
+                    <h4><i class="fas fa-lightbulb"></i> Tips</h4>
+                    <ul>
+                        <li>Use a valid email address for communication</li>
+                        <li>Complete address helps with billing and support</li>
+                        <li>Tenant names should be unique</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .page-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0;
+        }
+        
+        .page-subtitle {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-top: 0.25rem;
+        }
+        
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.75rem;
+        }
+        
+        .col-lg-4, .col-lg-8 { 
+            flex: 0 0 100%; 
+            max-width: 100%; 
+            padding: 0 0.75rem; 
+        }
+        
+        @@media (min-width: 1024px) {
+            .col-lg-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+            .col-lg-8 { flex: 0 0 66.666%; max-width: 66.666%; }
+        }
+        
+        .help-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .help-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .help-section h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .help-section h4 i {
+            color: var(--primary);
+        }
+        
+        .help-section p {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .help-section ul {
+            margin: 0;
+            padding-left: 1.25rem;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+        
+        .help-section ul li {
+            margin-bottom: 0.375rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,7 @@
+@model LicenseManagement.Web.ViewModels.Licenses.LicenseFormViewModel
+@{
+    ViewData["Title"] = "Edit License";
+}
+
+<!-- Use the same form as Create -->
+@await Html.PartialAsync("Create", Model)

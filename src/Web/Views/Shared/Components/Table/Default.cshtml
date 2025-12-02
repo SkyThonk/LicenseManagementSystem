@@ -1,0 +1,58 @@
+@model LicenseManagement.Web.ViewComponents.TableViewModel
+
+<div class="table-container">
+    @if (Model.ShowSearch)
+    {
+        <div class="table-toolbar">
+            <div class="table-toolbar-left">
+                <div class="table-search">
+                    <i class="fas fa-search table-search-icon"></i>
+                    <input type="text" class="table-search-input" placeholder="@Model.SearchPlaceholder">
+                </div>
+            </div>
+            <div class="table-toolbar-right">
+                @RenderSection("ToolbarActions", required: false)
+            </div>
+        </div>
+    }
+
+    @if (Model.Selectable)
+    {
+        <div class="table-bulk-actions">
+            <span class="table-bulk-count">0 items selected</span>
+            @RenderSection("BulkActions", required: false)
+        </div>
+    }
+
+    <div class="table-wrapper">
+        <table class="table @(Model.Striped ? "table-striped" : "") @(Model.Selectable ? "table-selectable" : "")">
+            <thead>
+                <tr>
+                    @if (Model.Selectable)
+                    {
+                        <th>
+                            <input type="checkbox" class="table-checkbox table-select-all">
+                        </th>
+                    }
+                    @foreach (var column in Model.Columns)
+                    {
+                        <th class="@(column.Sortable ? "sortable" : "") @column.CssClass" style="@(column.Width != null ? $"width: {column.Width}" : "")">
+                            @column.Title
+                            @if (column.Sortable)
+                            {
+                                <i class="fas fa-sort"></i>
+                            }
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @RenderBody()
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-footer">
+        @RenderSection("Footer", required: false)
+    </div>
+</div>

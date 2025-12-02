@@ -1,0 +1,335 @@
+@model LicenseManagement.Web.ViewModels.Payments.PaymentDetailsViewModel
+@{
+    ViewData["Title"] = $"Payment - {Model.ReferenceNumber}";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-content">
+        <nav class="breadcrumb">
+            <a href="/payments">Payments</a>
+            <span class="breadcrumb-separator">/</span>
+            <span>@Model.ReferenceNumber</span>
+        </nav>
+        <h1 class="page-title">@Model.ReferenceNumber</h1>
+        <span class="badge badge-lg badge-@GetStatusBadgeColor(Model.Status)">@Model.Status</span>
+    </div>
+    <div class="page-header-actions">
+        @if (Model.CanRefund)
+        {
+            <form method="post" action="/payments/refund/@Model.Id" 
+                  onsubmit="return confirm('Are you sure you want to refund this payment?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-undo"></i> Refund
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Payment Details -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">Payment Details</h3>
+            </div>
+            <div class="card-body">
+                <div class="payment-summary">
+                    <div class="payment-amount-large">
+                        <span class="currency">@Model.Currency</span>
+                        <span class="amount">@Model.Amount.ToString("N2")</span>
+                    </div>
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Reference Number</label>
+                        <span>@(Model.ReferenceNumber ?? "N/A")</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Status</label>
+                        <span class="badge badge-@GetStatusBadgeColor(Model.Status)">@Model.Status</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Created Date</label>
+                        <span>@Model.CreatedAt.ToString("MMMM dd, yyyy HH:mm")</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Paid Date</label>
+                        <span>@(Model.PaidAt?.ToString("MMMM dd, yyyy HH:mm") ?? "Not paid yet")</span>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger mt-3">
+                        <strong>Error:</strong> @Model.ErrorMessage
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Related Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">Related Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Tenant</label>
+                        <a href="/tenants/@Model.TenantId">@Model.TenantName</a>
+                    </div>
+                    <div class="detail-item">
+                        <label>Applicant</label>
+                        <span>@Model.ApplicantName</span>
+                    </div>
+                    @if (Model.LicenseId.HasValue)
+                    {
+                        <div class="detail-item">
+                            <label>License</label>
+                            <a href="/licenses/@Model.LicenseId">@Model.LicenseNumber</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">Quick Actions</h3>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    @if (Model.CanRefund)
+                    {
+                        <form method="post" action="/payments/refund/@Model.Id"
+                              onsubmit="return confirm('Are you sure you want to refund this payment?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline btn-warning btn-block">
+                                <i class="fas fa-undo"></i> Issue Refund
+                            </button>
+                        </form>
+                    }
+                    <button type="button" class="btn btn-outline btn-block" onclick="window.print();">
+                        <i class="fas fa-print"></i> Print Receipt
+                    </button>
+                    <a href="/tenants/@Model.TenantId" class="btn btn-outline btn-block">
+                        <i class="fas fa-building"></i> View Tenant
+                    </a>
+                    @if (Model.LicenseId.HasValue)
+                    {
+                        <a href="/licenses/@Model.LicenseId" class="btn btn-outline btn-block">
+                            <i class="fas fa-key"></i> View License
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Status -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Status Timeline</h3>
+            </div>
+            <div class="card-body">
+                <div class="status-timeline">
+                    <div class="status-item completed">
+                        <div class="status-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="status-content">
+                            <span class="status-title">Created</span>
+                            <span class="status-date">@Model.CreatedAt.ToString("MMM dd, HH:mm")</span>
+                        </div>
+                    </div>
+                    @if (Model.Status == "Completed" || Model.Status == "Paid")
+                    {
+                        <div class="status-item completed">
+                            <div class="status-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="status-content">
+                                <span class="status-title">Paid</span>
+                                <span class="status-date">@Model.PaidAt?.ToString("MMM dd, HH:mm")</span>
+                            </div>
+                        </div>
+                    }
+                    else if (Model.Status == "Failed")
+                    {
+                        <div class="status-item failed">
+                            <div class="status-icon">
+                                <i class="fas fa-times"></i>
+                            </div>
+                            <div class="status-content">
+                                <span class="status-title">Failed</span>
+                                <span class="status-date">Payment failed</span>
+                            </div>
+                        </div>
+                    }
+                    else if (Model.Status == "Pending")
+                    {
+                        <div class="status-item pending">
+                            <div class="status-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="status-content">
+                                <span class="status-title">Pending</span>
+                                <span class="status-date">Awaiting payment</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.75rem;
+        }
+        
+        .col-lg-4, .col-lg-8 { padding: 0 0.75rem; flex: 0 0 100%; max-width: 100%; }
+        
+        @@media (min-width: 1024px) {
+            .col-lg-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+            .col-lg-8 { flex: 0 0 66.666%; max-width: 66.666%; }
+        }
+        
+        .mb-4 { margin-bottom: 1rem; }
+        
+        .payment-summary {
+            text-align: center;
+            padding: 2rem 0;
+            border-bottom: 1px solid var(--gray-100);
+            margin-bottom: 1.5rem;
+        }
+        
+        .payment-amount-large {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+        
+        .payment-amount-large .currency {
+            font-size: 1.5rem;
+            font-weight: 400;
+            color: var(--gray-500);
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .detail-item label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+        }
+        
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .btn-block { width: 100%; }
+        
+        .status-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            position: relative;
+        }
+        
+        .status-item::before {
+            content: '';
+            position: absolute;
+            left: -1.5rem;
+            top: 1.5rem;
+            bottom: 0;
+            width: 2px;
+            background: var(--gray-200);
+        }
+        
+        .status-item:last-child::before {
+            display: none;
+        }
+        
+        .status-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            position: absolute;
+            left: -2.25rem;
+        }
+        
+        .status-item.completed .status-icon {
+            background: var(--success);
+            color: white;
+        }
+        
+        .status-item.pending .status-icon {
+            background: var(--warning);
+            color: white;
+        }
+        
+        .status-item.failed .status-icon {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .status-content {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-title {
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+        
+        .status-date {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+    </style>
+}
+
+@functions {
+    private string GetStatusBadgeColor(string status) => status switch
+    {
+        "Completed" or "Paid" => "success",
+        "Pending" => "warning",
+        "Failed" => "danger",
+        "Refunded" => "info",
+        _ => "secondary"
+    };
+}

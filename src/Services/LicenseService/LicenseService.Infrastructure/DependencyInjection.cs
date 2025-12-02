@@ -1,3 +1,5 @@
+using Common.Infrastructure.Messaging;
+using LicenseService.Infrastructure.EventHandlers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -26,6 +28,10 @@ public static class DependencyInjection
         {
             options.Configuration = builder.Configuration.GetConnectionString("redis");
         });
+
+        // Add Kafka event consumer for tenant events
+        services.AddKafkaEventConsumer(builder.Configuration, "license-service");
+        services.AddTenantEventHandler<LicenseTenantEventHandler>();
 
         return services;
     }

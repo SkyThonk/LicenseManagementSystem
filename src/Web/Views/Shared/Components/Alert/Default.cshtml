@@ -1,0 +1,33 @@
+@model LicenseManagement.Web.ViewModels.Shared.AlertViewModel
+
+@{
+    var typeString = Model.Type.ToString().ToLower();
+    var iconMap = new Dictionary<string, string>
+    {
+        { "success", "fa-check-circle" },
+        { "danger", "fa-exclamation-circle" },
+        { "warning", "fa-exclamation-triangle" },
+        { "info", "fa-info-circle" }
+    };
+    var icon = iconMap.GetValueOrDefault(typeString, "fa-info-circle");
+    var autoDismissAttr = Model.AutoDismiss ? $"data-auto-dismiss=\"{Model.AutoDismissDelay}\"" : "";
+}
+
+<div class="alert alert-@typeString @(Model.Dismissible ? "" : "alert-static")" @Html.Raw(autoDismissAttr)>
+    <div class="alert-icon">
+        <i class="fas @icon"></i>
+    </div>
+    <div class="alert-content">
+        @if (!string.IsNullOrEmpty(Model.Title))
+        {
+            <h4 class="alert-title">@Model.Title</h4>
+        }
+        <p class="alert-message">@Model.Message</p>
+    </div>
+    @if (Model.Dismissible)
+    {
+        <button type="button" class="alert-close">
+            <i class="fas fa-times"></i>
+        </button>
+    }
+</div>

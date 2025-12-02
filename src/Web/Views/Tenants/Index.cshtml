@@ -1,0 +1,240 @@
+@model LicenseManagement.Web.ViewModels.Tenants.TenantListViewModel
+@{
+    ViewData["Title"] = "Tenants";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-left">
+        <h1 class="page-title">Tenants</h1>
+        <p class="page-subtitle">Manage your tenant organizations</p>
+    </div>
+    <div class="page-header-right">
+        <a href="/tenants/create" class="btn btn-primary">
+            <i class="fas fa-plus"></i>
+            <span>Add Tenant</span>
+        </a>
+    </div>
+</div>
+
+<!-- Filters & Search -->
+<div class="card mb-6">
+    <div class="card-body">
+        <form method="get" class="filter-form">
+            <div class="filter-row">
+                <div class="filter-search">
+                    <i class="fas fa-search"></i>
+                    <input type="text" name="search" value="@Model.SearchTerm" 
+                           class="form-control" placeholder="Search tenants...">
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                    <a href="/tenants" class="btn btn-outline">Clear</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tenants Table -->
+<div class="table-container">
+    <div class="table-wrapper">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th class="sortable">Tenant</th>
+                    <th class="sortable">Email</th>
+                    <th class="sortable">Licenses</th>
+                    <th>Status</th>
+                    <th class="sortable">Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Tenants.Items.Any())
+                {
+                    @foreach (var tenant in Model.Tenants.Items)
+                    {
+                        <tr>
+                            <td>
+                                <div class="table-cell-user">
+                                    <div class="table-cell-avatar">@tenant.Name[0]</div>
+                                    <div>
+                                        <a href="/tenants/@tenant.Id" class="table-cell-name">@tenant.Name</a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@tenant.Email</td>
+                            <td>
+                                <span class="badge badge-outline">@tenant.LicenseCount licenses</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-@(tenant.Status == "Active" ? "success" : "danger")">
+                                    @tenant.Status
+                                </span>
+                            </td>
+                            <td class="table-cell-date">
+                                @tenant.CreatedAt.ToString("MMM dd, yyyy")
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <a href="/tenants/@tenant.Id" class="table-action-btn view" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/tenants/edit/@tenant.Id" class="table-action-btn edit" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <div class="table-actions-dropdown" data-dropdown>
+                                        <button class="table-action-btn" data-dropdown-trigger title="More">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <div class="table-actions-dropdown-menu">
+                                            @if (tenant.Status == "Active")
+                                            {
+                                                <form method="post" asp-action="Deactivate" asp-route-id="@tenant.Id">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="table-actions-dropdown-item">
+                                                        <i class="fas fa-ban"></i>
+                                                        <span>Deactivate</span>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form method="post" asp-action="Activate" asp-route-id="@tenant.Id">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="table-actions-dropdown-item">
+                                                        <i class="fas fa-check"></i>
+                                                        <span>Activate</span>
+                                                    </button>
+                                                </form>
+                                            }
+                                            <div class="table-actions-dropdown-divider"></div>
+                                            <form method="post" asp-action="Delete" asp-route-id="@tenant.Id" 
+                                                  onsubmit="return confirm('Are you sure you want to delete this tenant?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="table-actions-dropdown-item danger">
+                                                    <i class="fas fa-trash"></i>
+                                                    <span>Delete</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6">
+                            <div class="table-empty">
+                                <div class="table-empty-icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <h3 class="table-empty-title">No tenants found</h3>
+                                <p class="table-empty-text">
+                                    @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                                    {
+                                        @:No tenants match your search criteria.
+                                    }
+                                    else
+                                    {
+                                        @:Get started by adding your first tenant.
+                                    }
+                                </p>
+                                @if (string.IsNullOrEmpty(Model.SearchTerm))
+                                {
+                                    <a href="/tenants/create" class="btn btn-primary">
+                                        <i class="fas fa-plus"></i> Add Tenant
+                                    </a>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    
+    @if (Model.Tenants.TotalPages > 1)
+    {
+        <div class="table-footer">
+            @await Component.InvokeAsync("Pagination", new LicenseManagement.Web.ViewComponents.PaginationViewModel
+            {
+                CurrentPage = Model.CurrentPage,
+                TotalPages = Model.Tenants.TotalPages,
+                PageSize = Model.PageSize,
+                TotalItems = Model.Tenants.TotalCount,
+                BaseUrl = "/tenants",
+                QueryParameters = string.IsNullOrEmpty(Model.SearchTerm) ? null : new Dictionary<string, string> { { "search", Model.SearchTerm } }
+            })
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0;
+        }
+        
+        .page-subtitle {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-top: 0.25rem;
+        }
+        
+        .mb-6 {
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-form .filter-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-search {
+            position: relative;
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .filter-search i {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+        }
+        
+        .filter-search input {
+            padding-left: 2.5rem;
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .badge-outline {
+            background: transparent;
+            border: 1px solid var(--gray-300);
+            color: var(--gray-600);
+        }
+    </style>
+}

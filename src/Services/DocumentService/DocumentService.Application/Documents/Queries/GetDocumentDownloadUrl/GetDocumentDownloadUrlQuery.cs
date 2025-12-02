@@ -1,0 +1,5 @@
+using DocumentService.Contracts.Documents.GetDocumentDownloadUrl;
+
+namespace DocumentService.Application.Documents.Queries.GetDocumentDownloadUrl;
+
+public sealed record GetDocumentDownloadUrlQuery(GetDocumentDownloadUrlRequest Request);

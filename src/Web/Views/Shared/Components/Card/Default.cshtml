@@ -1,0 +1,25 @@
+@model LicenseManagement.Web.ViewComponents.CardViewModel
+
+<div class="card @Model.CssClass">
+    @if (Model.ShowHeader && !string.IsNullOrEmpty(Model.Title))
+    {
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">@Model.Title</h3>
+                @if (!string.IsNullOrEmpty(Model.Subtitle))
+                {
+                    <p class="card-subtitle">@Model.Subtitle</p>
+                }
+            </div>
+            @if (!string.IsNullOrEmpty(Model.HeaderActionsHtml))
+            {
+                <div class="card-header-actions">
+                    @Html.Raw(Model.HeaderActionsHtml)
+                </div>
+            }
+        </div>
+    }
+    <div class="card-body">
+        @RenderBody()
+    </div>
+</div>

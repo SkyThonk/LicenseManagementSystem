@@ -1,0 +1,355 @@
+@model LicenseManagement.Web.ViewModels.Dashboard.DashboardIndexViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<!-- Stats Cards -->
+<div class="card-grid card-grid-4 mb-6">
+    @foreach (var stat in Model.Stats)
+    {
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div class="stat-card-icon @stat.IconColor">
+                    <i class="@stat.Icon"></i>
+                </div>
+            </div>
+            <div class="stat-card-value">@stat.Value</div>
+            <div class="stat-card-label">@stat.Title</div>
+            @if (!string.IsNullOrEmpty(stat.ChangePercentage))
+            {
+                <div class="stat-card-change @(stat.IsPositiveChange ? "positive" : "negative")">
+                    <i class="fas @(stat.IsPositiveChange ? "fa-arrow-up" : "fa-arrow-down")"></i>
+                    <span>@stat.ChangePercentage</span>
+                    <span class="stat-card-change-text">@stat.Period</span>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-6">
+    <div class="col-lg-8">
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h3 class="chart-card-title">License Activity</h3>
+                <div class="header-actions">
+                    <select class="form-select form-control-sm" style="width: auto;">
+                        <option>Last 6 Months</option>
+                        <option>Last Year</option>
+                        <option>All Time</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chart-card-body">
+                <canvas id="licenseChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <h3 class="chart-card-title">License Distribution</h3>
+            </div>
+            <div class="chart-card-body">
+                <canvas id="distributionChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Data Row -->
+<div class="row">
+    <!-- Recent Licenses -->
+    <div class="col-lg-6 mb-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recent Licenses</h3>
+                <a href="/licenses" class="btn btn-sm btn-outline">View All</a>
+            </div>
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Tenant</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Expires</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var license in Model.RecentLicenses)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="table-cell-user">
+                                        <div class="table-cell-avatar">@license.TenantName[0]</div>
+                                        <div>
+                                            <div class="table-cell-name">@license.TenantName</div>
+                                            <div class="table-cell-id">@license.LicenseKey</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@license.Type</td>
+                                <td>
+                                    <span class="badge badge-@(license.Status == "Active" ? "success" : license.Status == "Expiring" ? "warning" : "danger")">
+                                        @license.Status
+                                    </span>
+                                </td>
+                                <td class="table-cell-date">
+                                    @license.ExpirationDate.ToString("MMM dd, yyyy")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="col-lg-6 mb-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recent Payments</h3>
+                <a href="/payments" class="btn btn-sm btn-outline">View All</a>
+            </div>
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Tenant</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var payment in Model.RecentPayments)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="table-cell-name">@payment.TenantName</div>
+                                </td>
+                                <td class="table-cell-amount">$@payment.Amount.ToString("N2")</td>
+                                <td>
+                                    <span class="badge badge-@(payment.Status == "Completed" ? "success" : "warning")">
+                                        @payment.Status
+                                    </span>
+                                </td>
+                                <td class="table-cell-date">
+                                    @payment.Date.ToString("MMM dd, yyyy")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Recent Activity</h3>
+            </div>
+            <div class="card-body">
+                <div class="activity-timeline">
+                    @foreach (var activity in Model.RecentActivities)
+                    {
+                        <div class="activity-item">
+                            <div class="activity-icon @activity.IconColor">
+                                <i class="@activity.Icon"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p class="activity-text">@activity.Description</p>
+                                <span class="activity-time">@GetTimeAgo(activity.Timestamp)</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.75rem;
+        }
+        
+        .col-12 { flex: 0 0 100%; max-width: 100%; padding: 0 0.75rem; }
+        .col-lg-4 { flex: 0 0 100%; max-width: 100%; padding: 0 0.75rem; }
+        .col-lg-6 { flex: 0 0 100%; max-width: 100%; padding: 0 0.75rem; }
+        .col-lg-8 { flex: 0 0 100%; max-width: 100%; padding: 0 0.75rem; }
+        
+        @@media (min-width: 1024px) {
+            .col-lg-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+            .col-lg-6 { flex: 0 0 50%; max-width: 50%; }
+            .col-lg-8 { flex: 0 0 66.666%; max-width: 66.666%; }
+        }
+        
+        .mb-6 { margin-bottom: 1.5rem; }
+        
+        /* Activity Timeline */
+        .activity-timeline {
+            position: relative;
+        }
+        
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+        
+        .activity-icon.primary {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+        
+        .activity-icon.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .activity-icon.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        
+        .activity-icon.info {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-text {
+            font-size: 0.875rem;
+            color: var(--gray-700);
+            margin: 0 0 0.25rem 0;
+        }
+        
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // License Activity Chart
+        const licenseCtx = document.getElementById('licenseChart').getContext('2d');
+        new Chart(licenseCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.LicenseChartData.Labels)),
+                datasets: [
+                    {
+                        label: 'New Licenses',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.LicenseChartData.Datasets[0].Data)),
+                        backgroundColor: '#6366f1',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Renewals',
+                        data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.LicenseChartData.Datasets[1].Data)),
+                        backgroundColor: '#10b981',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        align: 'end'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Distribution Chart
+        const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+        new Chart(distributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Enterprise', 'Professional', 'Basic', 'Trial'],
+                datasets: [{
+                    data: [35, 40, 20, 5],
+                    backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+    </script>
+}
+
+@functions {
+    private string GetTimeAgo(DateTime timestamp)
+    {
+        var diff = DateTime.UtcNow - timestamp;
+        
+        if (diff.TotalMinutes < 1)
+            return "Just now";
+        if (diff.TotalMinutes < 60)
+            return $"{(int)diff.TotalMinutes} minutes ago";
+        if (diff.TotalHours < 24)
+            return $"{(int)diff.TotalHours} hours ago";
+        if (diff.TotalDays < 7)
+            return $"{(int)diff.TotalDays} days ago";
+        
+        return timestamp.ToString("MMM dd, yyyy");
+    }
+}

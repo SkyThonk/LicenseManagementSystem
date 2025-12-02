@@ -3,12 +3,25 @@
   <ItemGroup>
     <ProjectReference Include="..\DocumentService.Application\DocumentService.Application.csproj" />
     <ProjectReference Include="..\DocumentService.Domain\DocumentService.Domain.csproj" />
+    <ProjectReference Include="..\DocumentService.Persistence\DocumentService.Persistence.csproj" />
+    <ProjectReference Include="..\..\..\Common\Common.Infrastructure\Common.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Confluent.Kafka" Version="2.10.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
   </ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AssemblyName>DocumentService.Infrastructure</AssemblyName>
+    <RootNamespace>DocumentService.Infrastructure</RootNamespace>
   </PropertyGroup>
 
 </Project>

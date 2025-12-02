@@ -1,0 +1,7 @@
+@model LicenseManagement.Web.ViewModels.Tenants.TenantFormViewModel
+@{
+    ViewData["Title"] = "Edit Tenant";
+}
+
+<!-- Reuse Create view -->
+@await Html.PartialAsync("Create", Model)

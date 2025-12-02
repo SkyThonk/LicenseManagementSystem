@@ -1,0 +1,424 @@
+@model LicenseManagement.Web.ViewModels.Licenses.LicenseDetailsViewModel
+@{
+    ViewData["Title"] = $"License - {Model.LicenseNumber}";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-content">
+        <nav class="breadcrumb">
+            <a href="/licenses">Licenses</a>
+            <span class="breadcrumb-separator">/</span>
+            <span>@Model.LicenseNumber</span>
+        </nav>
+        <h1 class="page-title">@Model.LicenseNumber</h1>
+        <span class="badge badge-lg badge-@GetStatusBadgeColor(Model.Status)">@Model.Status</span>
+    </div>
+    <div class="page-header-actions">
+        <a href="/licenses/edit/@Model.Id" class="btn btn-secondary">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+        @if (Model.Status != "Active")
+        {
+            <form method="post" action="/licenses/activate/@Model.Id" style="display: inline;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-check"></i> Activate
+                </button>
+            </form>
+        }
+        else
+        {
+            <form method="post" action="/licenses/deactivate/@Model.Id" style="display: inline;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-warning">
+                    <i class="fas fa-pause"></i> Deactivate
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+        <!-- License Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">License Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>License Number</label>
+                        <span>@Model.LicenseNumber</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>License Type</label>
+                        <span class="badge badge-@GetTypeBadgeColor(Model.LicenseType)">@Model.LicenseType</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Application Date</label>
+                        <span>@Model.ApplicationDate.ToString("MMMM dd, yyyy")</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Approval Date</label>
+                        <span>@(Model.ApprovalDate?.ToString("MMMM dd, yyyy") ?? "Not approved yet")</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Expiry Date</label>
+                        <span class="@(IsExpiringSoon(Model.ExpiryDate) ? "text-warning" : "")">
+                            @(Model.ExpiryDate?.ToString("MMMM dd, yyyy") ?? "N/A")
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Tenant</label>
+                        <a href="/tenants/@Model.TenantId">@Model.TenantName</a>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.RejectionReason))
+                {
+                    <div class="alert alert-danger mt-3">
+                        <strong>Rejection Reason:</strong> @Model.RejectionReason
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Applicant Information -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">Applicant Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Full Name</label>
+                        <span>@Model.Applicant.FullName</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Email</label>
+                        <a href="mailto:@Model.Applicant.Email">@Model.Applicant.Email</a>
+                    </div>
+                    <div class="detail-item">
+                        <label>Phone</label>
+                        <span>@(Model.Applicant.Phone ?? "N/A")</span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <label>Address</label>
+                        <span>@(Model.Applicant.Address ?? "N/A")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">Documents</h3>
+                <a href="/documents/upload?licenseId=@Model.Id" class="btn btn-sm btn-outline">
+                    <i class="fas fa-upload"></i> Upload
+                </a>
+            </div>
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>Uploaded</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doc in Model.Documents)
+                        {
+                            <tr>
+                                <td>
+                                    <i class="fas fa-file-pdf text-danger"></i>
+                                    @doc.FileName
+                                </td>
+                                <td>@doc.DocumentType</td>
+                                <td>@doc.SizeKb KB</td>
+                                <td>@doc.UploadedAt.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    <a href="/documents/download/@doc.Id" class="btn btn-sm btn-outline">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.Documents.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    No documents uploaded yet.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Quick Actions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">Quick Actions</h3>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <button type="button" class="btn btn-outline btn-block" data-modal-open="renewModal">
+                        <i class="fas fa-redo"></i> Renew License
+                    </button>
+                    <a href="/documents/upload?licenseId=@Model.Id" class="btn btn-outline btn-block">
+                        <i class="fas fa-upload"></i> Upload Document
+                    </a>
+                    <form method="post" action="/licenses/delete/@Model.Id" 
+                          onsubmit="return confirm('Are you sure you want to delete this license?');">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline btn-danger btn-block">
+                            <i class="fas fa-trash"></i> Delete License
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment History -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">Payment History</h3>
+            </div>
+            <div class="card-body">
+                @foreach (var payment in Model.Payments)
+                {
+                    <div class="payment-item">
+                        <div class="payment-info">
+                            <span class="payment-amount">$@payment.Amount.ToString("N2")</span>
+                            <span class="payment-date">@payment.Date.ToString("MMM dd, yyyy")</span>
+                        </div>
+                        <span class="badge badge-@(payment.Status == "Completed" ? "success" : "warning")">
+                            @payment.Status
+                        </span>
+                    </div>
+                }
+                @if (!Model.Payments.Any())
+                {
+                    <p class="text-muted text-center py-3">No payments recorded.</p>
+                }
+            </div>
+        </div>
+
+        <!-- Workflow History -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Activity Log</h3>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    @foreach (var item in Model.WorkflowHistory)
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h4>@item.Action</h4>
+                                <p>@item.Notes</p>
+                                <span class="timeline-date">
+                                    @item.Timestamp.ToString("MMM dd, yyyy HH:mm") by @item.PerformedBy
+                                </span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Renew Modal -->
+<div class="modal" id="renewModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Renew License</h3>
+                <button type="button" class="modal-close" data-modal-close>
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form method="post" action="/licenses/renew/@Model.Id">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">New Expiration Date</label>
+                        <input type="date" name="expirationDate" class="form-control" 
+                               min="@DateTime.UtcNow.AddDays(1).ToString("yyyy-MM-dd")"
+                               value="@DateTime.UtcNow.AddYears(1).ToString("yyyy-MM-dd")" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+                    <button type="submit" class="btn btn-primary">Renew License</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.75rem;
+        }
+        
+        .col-lg-4, .col-lg-8 { padding: 0 0.75rem; flex: 0 0 100%; max-width: 100%; }
+        
+        @@media (min-width: 1024px) {
+            .col-lg-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+            .col-lg-8 { flex: 0 0 66.666%; max-width: 66.666%; }
+        }
+        
+        .mb-4 { margin-bottom: 1rem; }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .detail-item.full-width {
+            grid-column: span 2;
+        }
+        
+        .detail-item label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .btn-block {
+            width: 100%;
+        }
+        
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-100);
+        }
+        
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+        
+        .payment-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .payment-amount {
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+        
+        .payment-date {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--gray-200);
+        }
+        
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1rem;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -1.25rem;
+            width: 0.75rem;
+            height: 0.75rem;
+            background: var(--primary);
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        
+        .timeline-content h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .timeline-content p {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            margin: 0.25rem 0;
+        }
+        
+        .timeline-date {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+        }
+    </style>
+}
+
+@functions {
+    private string GetStatusBadgeColor(string status) => status switch
+    {
+        "Active" => "success",
+        "Pending" => "warning",
+        "Expiring" => "warning",
+        "Expired" => "danger",
+        "Suspended" => "secondary",
+        _ => "secondary"
+    };
+
+    private string GetTypeBadgeColor(string type) => type switch
+    {
+        "Enterprise" => "primary",
+        "Professional" => "info",
+        "Basic" => "secondary",
+        "Trial" => "warning",
+        _ => "secondary"
+    };
+
+    private bool IsExpiringSoon(DateTime? expiryDate)
+    {
+        if (!expiryDate.HasValue) return false;
+        return expiryDate.Value <= DateTime.UtcNow.AddDays(30);
+    }
+}

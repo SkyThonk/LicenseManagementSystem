@@ -3,12 +3,19 @@
   <ItemGroup>
     <ProjectReference Include="..\PaymentService.Domain\PaymentService.Domain.csproj" />
     <ProjectReference Include="..\PaymentService.Contracts\PaymentService.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\Common\Common.Application\Common.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WolverineFx" Version="4.10.0" />
   </ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AssemblyName>PaymentService.Application</AssemblyName>
+    <RootNamespace>PaymentService.Application</RootNamespace>
   </PropertyGroup>
 
 </Project>

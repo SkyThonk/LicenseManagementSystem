@@ -4,6 +4,7 @@
     <ProjectReference Include="..\TenantService.Domain\TenantService.Domain.csproj" />
     <ProjectReference Include="..\TenantService.Contracts\TenantService.Contracts.csproj" />
     <ProjectReference Include="..\..\..\Common\Common.Application\Common.Application.csproj" />
+    <ProjectReference Include="..\..\..\Common\Common.Domain\Common.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

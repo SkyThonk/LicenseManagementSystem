@@ -1,0 +1,317 @@
+@model LicenseManagement.Web.ViewModels.Documents.DocumentUploadViewModel
+@{
+    ViewData["Title"] = "Upload Document";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-content">
+        <nav class="breadcrumb">
+            <a href="/documents">Documents</a>
+            <span class="breadcrumb-separator">/</span>
+            <span>Upload</span>
+        </nav>
+        <h1 class="page-title">Upload Document</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post" enctype="multipart/form-data" asp-action="Upload">
+            @Html.AntiForgeryToken()
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">Document Details</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="LicenseId" class="form-label">
+                                License <span class="required">*</span>
+                            </label>
+                            <select asp-for="LicenseId" asp-items="Model.Licenses" class="form-select"></select>
+                            <span asp-validation-for="LicenseId" class="form-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="DocumentType" class="form-label">
+                                Document Type <span class="required">*</span>
+                            </label>
+                            <select asp-for="DocumentType" asp-items="Model.DocumentTypes" class="form-select"></select>
+                            <span asp-validation-for="DocumentType" class="form-error"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="File" class="form-label">
+                            File <span class="required">*</span>
+                        </label>
+                        <div class="file-upload-area" id="dropZone">
+                            <input asp-for="File" type="file" class="file-input" id="fileInput" 
+                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
+                            <div class="file-upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>Drag & drop a file here or <span class="file-browse">browse</span></p>
+                                <span class="file-hint">Supported: PDF, DOC, DOCX, JPG, PNG (Max 10MB)</span>
+                            </div>
+                            <div class="file-preview" id="filePreview" style="display: none;">
+                                <i class="fas fa-file"></i>
+                                <span class="file-name" id="fileName"></span>
+                                <span class="file-size" id="fileSize"></span>
+                                <button type="button" class="file-remove" id="removeFile">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <span asp-validation-for="File" class="form-error"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Description" class="form-label">
+                            Description
+                            <span class="form-label-optional">(optional)</span>
+                        </label>
+                        <textarea asp-for="Description" class="form-control" rows="3" 
+                                  placeholder="Add a description for this document..."></textarea>
+                        <span class="form-hint">Maximum 500 characters</span>
+                        <span asp-validation-for="Description" class="form-error"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions form-actions-right">
+                <a href="/documents" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-upload"></i>
+                    Upload Document
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Upload Guidelines</h3>
+            </div>
+            <div class="card-body">
+                <div class="help-section">
+                    <h4><i class="fas fa-file-alt"></i> Supported Formats</h4>
+                    <ul>
+                        <li>PDF documents (.pdf)</li>
+                        <li>Word documents (.doc, .docx)</li>
+                        <li>Images (.jpg, .jpeg, .png)</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h4><i class="fas fa-exclamation-triangle"></i> File Requirements</h4>
+                    <ul>
+                        <li>Maximum file size: 10MB</li>
+                        <li>Clear and readable documents</li>
+                        <li>No password-protected files</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h4><i class="fas fa-lightbulb"></i> Tips</h4>
+                    <ul>
+                        <li>Use descriptive file names</li>
+                        <li>Ensure documents are complete</li>
+                        <li>Scan physical documents clearly</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.75rem;
+        }
+        
+        .col-lg-4, .col-lg-8 { padding: 0 0.75rem; flex: 0 0 100%; max-width: 100%; }
+        
+        @@media (min-width: 1024px) {
+            .col-lg-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+            .col-lg-8 { flex: 0 0 66.666%; max-width: 66.666%; }
+        }
+        
+        .mb-4 { margin-bottom: 1rem; }
+        
+        .file-upload-area {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .file-upload-area:hover,
+        .file-upload-area.drag-over {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .file-input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-upload-content i {
+            font-size: 2.5rem;
+            color: var(--gray-400);
+            margin-bottom: 1rem;
+        }
+        
+        .file-upload-content p {
+            color: var(--gray-600);
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .file-browse {
+            color: var(--primary);
+            font-weight: 500;
+        }
+        
+        .file-hint {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+        }
+        
+        .file-preview {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--gray-50);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+        }
+        
+        .file-preview i {
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .file-name {
+            flex: 1;
+            font-weight: 500;
+            color: var(--gray-800);
+        }
+        
+        .file-size {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+        
+        .file-remove {
+            background: none;
+            border: none;
+            color: var(--gray-400);
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+        
+        .file-remove:hover {
+            color: var(--danger);
+        }
+        
+        .help-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .help-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .help-section h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .help-section ul {
+            margin: 0;
+            padding-left: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+        
+        .help-section li {
+            margin-bottom: 0.25rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const filePreview = document.getElementById('filePreview');
+            const fileUploadContent = dropZone.querySelector('.file-upload-content');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const removeFile = document.getElementById('removeFile');
+
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                dropZone.classList.add('drag-over');
+            });
+
+            dropZone.addEventListener('dragleave', function() {
+                dropZone.classList.remove('drag-over');
+            });
+
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over');
+                if (e.dataTransfer.files.length) {
+                    fileInput.files = e.dataTransfer.files;
+                    showFilePreview(e.dataTransfer.files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', function() {
+                if (this.files.length) {
+                    showFilePreview(this.files[0]);
+                }
+            });
+
+            removeFile.addEventListener('click', function(e) {
+                e.stopPropagation();
+                fileInput.value = '';
+                hideFilePreview();
+            });
+
+            function showFilePreview(file) {
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                fileUploadContent.style.display = 'none';
+                filePreview.style.display = 'flex';
+            }
+
+            function hideFilePreview() {
+                fileUploadContent.style.display = 'block';
+                filePreview.style.display = 'none';
+            }
+
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+            }
+        });
+    </script>
+}

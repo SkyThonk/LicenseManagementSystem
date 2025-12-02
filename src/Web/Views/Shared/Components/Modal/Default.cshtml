@@ -1,0 +1,24 @@
+@model LicenseManagement.Web.ViewComponents.ModalViewModel
+
+<div class="modal" id="@Model.Id" @(Model.StaticBackdrop ? "data-modal-static" : "")>
+    <div class="modal-overlay">
+        <div class="modal-dialog @(Model.Size != null ? $"modal-{Model.Size}" : "")">
+            <div class="modal-header">
+                <h3 class="modal-title">@Model.Title</h3>
+                <button type="button" class="modal-close" data-modal-close>
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                @RenderBody()
+            </div>
+            @if (Model.ShowFooter)
+            {
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-modal-close>@Model.CancelButtonText</button>
+                    <button type="submit" class="btn @Model.SubmitButtonClass">@Model.SubmitButtonText</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>

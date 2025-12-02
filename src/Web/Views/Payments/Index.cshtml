@@ -1,0 +1,183 @@
+@model LicenseManagement.Web.ViewModels.Payments.PaymentListViewModel
+@{
+    ViewData["Title"] = "Payments";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-content">
+        <h1 class="page-title">Payments</h1>
+        <p class="page-description">View and manage all payment transactions</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="filter-form">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="search" value="@Model.SearchQuery" class="form-control" placeholder="Search by reference, tenant...">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="Completed" selected="@(Model.StatusFilter == "Completed")">Completed</option>
+                        <option value="Pending" selected="@(Model.StatusFilter == "Pending")">Pending</option>
+                        <option value="Failed" selected="@(Model.StatusFilter == "Failed")">Failed</option>
+                        <option value="Refunded" selected="@(Model.StatusFilter == "Refunded")">Refunded</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">From Date</label>
+                    <input type="date" name="fromDate" value="@Model.FromDate?.ToString("yyyy-MM-dd")" class="form-control">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">To Date</label>
+                    <input type="date" name="toDate" value="@Model.ToDate?.ToString("yyyy-MM-dd")" class="form-control">
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                    <a href="/payments" class="btn btn-outline">Clear</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="card-grid card-grid-4 mb-4">
+    <div class="stat-card">
+        <div class="stat-card-icon primary">
+            <i class="fas fa-credit-card"></i>
+        </div>
+        <div class="stat-card-value">$@GetTotalAmount()</div>
+        <div class="stat-card-label">Total Revenue</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon success">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-card-value">@GetCompletedCount()</div>
+        <div class="stat-card-label">Completed</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon warning">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-card-value">@GetPendingCount()</div>
+        <div class="stat-card-label">Pending</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card-icon danger">
+            <i class="fas fa-times-circle"></i>
+        </div>
+        <div class="stat-card-value">@GetFailedCount()</div>
+        <div class="stat-card-label">Failed</div>
+    </div>
+</div>
+
+<!-- Payments Table -->
+<div class="card">
+    <div class="table-wrapper">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Tenant</th>
+                    <th>License</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var payment in Model.Payments.Items)
+                {
+                    <tr>
+                        <td>
+                            <a href="/payments/@payment.Id" class="table-cell-link">
+                                @(payment.ReferenceNumber ?? "N/A")
+                            </a>
+                        </td>
+                        <td>@payment.TenantName</td>
+                        <td>@(payment.LicenseNumber ?? "N/A")</td>
+                        <td class="table-cell-amount">
+                            <span class="currency">@payment.Currency</span>
+                            @payment.Amount.ToString("N2")
+                        </td>
+                        <td>
+                            <span class="badge badge-@GetStatusBadgeColor(payment.Status)">
+                                @payment.Status
+                            </span>
+                        </td>
+                        <td class="table-cell-date">
+                            @(payment.PaidAt?.ToString("MMM dd, yyyy") ?? payment.CreatedAt.ToString("MMM dd, yyyy"))
+                        </td>
+                        <td>
+                            <div class="table-actions">
+                                <a href="/payments/@payment.Id" class="btn btn-sm btn-outline" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.Payments.TotalPages > 1)
+    {
+        <div class="card-footer">
+            <vc:pagination current-page="@Model.Payments.PageNumber" 
+                          total-pages="@Model.Payments.TotalPages" 
+                          page-size="@Model.Payments.PageSize" />
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .mb-4 { margin-bottom: 1rem; }
+        
+        .currency {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-right: 0.25rem;
+        }
+        
+        .table-cell-amount {
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+    </style>
+}
+
+@functions {
+    private string GetStatusBadgeColor(string status) => status switch
+    {
+        "Completed" => "success",
+        "Pending" => "warning",
+        "Failed" => "danger",
+        "Refunded" => "info",
+        _ => "secondary"
+    };
+
+    private string GetTotalAmount()
+    {
+        return Model.Payments.Items
+            .Where(p => p.Status == "Completed")
+            .Sum(p => p.Amount)
+            .ToString("N0");
+    }
+
+    private int GetCompletedCount() => Model.Payments.Items.Count(p => p.Status == "Completed");
+    private int GetPendingCount() => Model.Payments.Items.Count(p => p.Status == "Pending");
+    private int GetFailedCount() => Model.Payments.Items.Count(p => p.Status == "Failed");
+}

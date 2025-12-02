@@ -1,4 +1,5 @@
 using TenantService.Application.Common.Interfaces.Authentication;
+using TenantService.Application.Common.Interfaces.Messaging;
 using TenantService.Infrastructure.Messaging;
 using TenantService.Infrastructure.Authentication;
 // No Common.* using directives here to avoid naming conflicts; use fully-qualified types instead
@@ -39,9 +40,10 @@ public static class DependencyInjection
             options.Configuration = builder.Configuration.GetConnectionString("redis");
         });
 
-        // Add Kafka producer
+        // Add Kafka producer and event publisher
         services.AddSingleton<IKafkaProducer, KafkaProducer>();
         services.AddSingleton<IKafkaAdmin, KafkaAdmin>();
+        services.AddScoped<ITenantEventPublisher, TenantEventPublisher>();
 
         return services;
     }

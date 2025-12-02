@@ -1,0 +1,198 @@
+@model LicenseManagement.Web.ViewModels.Licenses.LicenseFormViewModel
+@{
+    ViewData["Title"] = Model.IsEdit ? "Edit License" : "New License";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-content">
+        <nav class="breadcrumb">
+            <a href="/licenses">Licenses</a>
+            <span class="breadcrumb-separator">/</span>
+            <span>@ViewData["Title"]</span>
+        </nav>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post" asp-action="@(Model.IsEdit ? "Edit" : "Create")">
+            @Html.AntiForgeryToken()
+            @if (Model.Id.HasValue)
+            {
+                <input type="hidden" name="Id" value="@Model.Id" />
+            }
+
+            <!-- License Details -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">License Details</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="LicenseType" class="form-label">
+                                License Type <span class="required">*</span>
+                            </label>
+                            <select asp-for="LicenseType" asp-items="Model.LicenseTypes" class="form-select"></select>
+                            <span asp-validation-for="LicenseType" class="form-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="TenantId" class="form-label">
+                                Tenant
+                            </label>
+                            <select asp-for="TenantId" asp-items="Model.Tenants" class="form-select"></select>
+                            <span asp-validation-for="TenantId" class="form-error"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Applicant Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">Applicant Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="ApplicantName" class="form-label">
+                                Full Name <span class="required">*</span>
+                            </label>
+                            <input asp-for="ApplicantName" class="form-control" placeholder="Enter applicant's full name" />
+                            <span asp-validation-for="ApplicantName" class="form-error"></span>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="ApplicantEmail" class="form-label">
+                                Email <span class="required">*</span>
+                            </label>
+                            <input asp-for="ApplicantEmail" type="email" class="form-control" placeholder="Enter email address" />
+                            <span asp-validation-for="ApplicantEmail" class="form-error"></span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="ApplicantPhone" class="form-label">
+                                Phone
+                                <span class="form-label-optional">(optional)</span>
+                            </label>
+                            <input asp-for="ApplicantPhone" type="tel" class="form-control" placeholder="+1 (555) 000-0000" />
+                            <span asp-validation-for="ApplicantPhone" class="form-error"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="ApplicantAddress" class="form-label">
+                            Address
+                            <span class="form-label-optional">(optional)</span>
+                        </label>
+                        <textarea asp-for="ApplicantAddress" class="form-control" rows="3" placeholder="Enter full address"></textarea>
+                        <span asp-validation-for="ApplicantAddress" class="form-error"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">Additional Notes</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label asp-for="Notes" class="form-label">
+                            Notes
+                            <span class="form-label-optional">(optional)</span>
+                        </label>
+                        <textarea asp-for="Notes" class="form-control" rows="4" placeholder="Add any additional notes or comments..."></textarea>
+                        <span class="form-hint">Maximum 2000 characters</span>
+                        <span asp-validation-for="Notes" class="form-error"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions form-actions-right">
+                <a href="@(Model.IsEdit ? $"/licenses/{Model.Id}" : "/licenses")" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    @(Model.IsEdit ? "Update License" : "Create License")
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Help</h3>
+            </div>
+            <div class="card-body">
+                <div class="help-section">
+                    <h4><i class="fas fa-info-circle"></i> License Types</h4>
+                    <ul>
+                        <li><strong>Enterprise:</strong> Full features, unlimited users</li>
+                        <li><strong>Professional:</strong> Advanced features, up to 50 users</li>
+                        <li><strong>Basic:</strong> Core features, up to 10 users</li>
+                        <li><strong>Trial:</strong> 30-day trial with all features</li>
+                    </ul>
+                </div>
+                <div class="help-section">
+                    <h4><i class="fas fa-lightbulb"></i> Tips</h4>
+                    <ul>
+                        <li>Use a valid email for license delivery</li>
+                        <li>Phone number helps with verification</li>
+                        <li>Complete address required for Enterprise</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.75rem;
+        }
+        
+        .col-lg-4, .col-lg-8 { padding: 0 0.75rem; flex: 0 0 100%; max-width: 100%; }
+        
+        @@media (min-width: 1024px) {
+            .col-lg-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+            .col-lg-8 { flex: 0 0 66.666%; max-width: 66.666%; }
+        }
+        
+        .mb-4 { margin-bottom: 1rem; }
+        
+        .help-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .help-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .help-section h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .help-section ul {
+            margin: 0;
+            padding-left: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+        
+        .help-section li {
+            margin-bottom: 0.25rem;
+        }
+    </style>
+}

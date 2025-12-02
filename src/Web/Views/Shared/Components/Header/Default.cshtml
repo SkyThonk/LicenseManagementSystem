@@ -1,0 +1,111 @@
+@model LicenseManagement.Web.ViewComponents.HeaderViewModel
+
+<header class="header">
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" aria-label="Open menu">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Page Title -->
+    <div class="header-title">
+        <h1>@Model.Title</h1>
+    </div>
+
+    <!-- Search -->
+    <div class="header-search">
+        <i class="fas fa-search header-search-icon"></i>
+        <input type="text" class="header-search-input" placeholder="Search...">
+        <span class="header-search-shortcut">⌘K</span>
+    </div>
+
+    <!-- Actions -->
+    <div class="header-actions">
+        <!-- Theme Toggle -->
+        <button class="header-action-btn" data-theme-toggle data-tooltip="Toggle theme" data-tooltip-position="bottom">
+            <i class="fas fa-moon"></i>
+        </button>
+
+        <!-- Notifications -->
+        <div class="notifications-dropdown" data-dropdown>
+            <button class="header-action-btn" data-dropdown-trigger>
+                <i class="fas fa-bell"></i>
+                @if (Model.UnreadNotificationsCount > 0)
+                {
+                    <span class="badge">@Model.UnreadNotificationsCount</span>
+                }
+            </button>
+            <div class="notifications-dropdown-menu">
+                <div class="notifications-header">
+                    <h3>Notifications</h3>
+                    <button class="mark-all-read">Mark all read</button>
+                </div>
+                <div class="notifications-list">
+                    <div class="notification-item unread">
+                        <div class="notification-icon success">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title">License activated</div>
+                            <div class="notification-text">License for Acme Corp has been activated successfully.</div>
+                            <div class="notification-time">5 minutes ago</div>
+                        </div>
+                    </div>
+                    <div class="notification-item unread">
+                        <div class="notification-icon warning">
+                            <i class="fas fa-exclamation"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title">License expiring soon</div>
+                            <div class="notification-text">3 licenses will expire in the next 30 days.</div>
+                            <div class="notification-time">1 hour ago</div>
+                        </div>
+                    </div>
+                    <div class="notification-item">
+                        <div class="notification-icon info">
+                            <i class="fas fa-info"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title">New tenant registered</div>
+                            <div class="notification-text">Tech Solutions Inc. has been registered.</div>
+                            <div class="notification-time">2 hours ago</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="notifications-footer">
+                    <a href="/notifications">View all notifications</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Dropdown -->
+        <div class="user-dropdown" data-dropdown>
+            <button class="user-dropdown-toggle" data-dropdown-trigger>
+                <div class="user-dropdown-avatar">AD</div>
+                <div class="user-dropdown-info">
+                    <div class="user-dropdown-name">Admin User</div>
+                    <div class="user-dropdown-role">Administrator</div>
+                </div>
+                <i class="fas fa-chevron-down user-dropdown-chevron"></i>
+            </button>
+            <div class="user-dropdown-menu">
+                <div class="user-dropdown-menu-header">
+                    <div class="name">Admin User</div>
+                    <div class="email">admin@example.com</div>
+                </div>
+                <a href="/account/profile" class="user-dropdown-menu-item">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="/account/settings" class="user-dropdown-menu-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+                <div class="user-dropdown-menu-divider"></div>
+                <a href="/account/logout" class="user-dropdown-menu-item logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</header>

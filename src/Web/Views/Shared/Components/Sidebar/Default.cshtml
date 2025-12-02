@@ -1,0 +1,97 @@
+@model List<LicenseManagement.Web.ViewModels.Shared.SidebarItem>
+
+<aside class="sidebar">
+    <!-- Sidebar Toggle Button -->
+    <button class="sidebar-toggle" aria-label="Toggle sidebar">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+        <a href="/" class="sidebar-logo">
+            <div class="sidebar-logo-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <span class="sidebar-logo-text">LicenseMS</span>
+        </a>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-section-title">Main Menu</div>
+            <ul class="nav-list">
+                @foreach (var item in Model)
+                {
+                    <li class="nav-item @(item.HasChildren ? "has-submenu" : "") @(item.IsActive ? "active" : "")">
+                        <a href="@item.Url" 
+                           class="nav-link @(item.IsActive ? "active" : "")" 
+                           data-tooltip="@item.Title"
+                           @(item.HasChildren ? "data-submenu" : "")>
+                            <span class="nav-link-icon">
+                                <i class="@item.Icon"></i>
+                            </span>
+                            <span class="nav-link-text">@item.Title</span>
+                            @if (!string.IsNullOrEmpty(item.BadgeText))
+                            {
+                                <span class="nav-link-badge">@item.BadgeText</span>
+                            }
+                            @if (item.HasChildren)
+                            {
+                                <i class="fas fa-chevron-down nav-link-chevron"></i>
+                            }
+                        </a>
+                        @if (item.HasChildren)
+                        {
+                            <ul class="nav-submenu">
+                                @foreach (var child in item.Children!)
+                                {
+                                    <li class="nav-item">
+                                        <a href="@child.Url" class="nav-link @(child.IsActive ? "active" : "")">
+                                            <span class="nav-link-text">@child.Title</span>
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Settings</div>
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="/account/profile" class="nav-link" data-tooltip="Profile">
+                        <span class="nav-link-icon">
+                            <i class="fas fa-user-circle"></i>
+                        </span>
+                        <span class="nav-link-text">Profile</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/account/settings" class="nav-link" data-tooltip="Settings">
+                        <span class="nav-link-icon">
+                            <i class="fas fa-cog"></i>
+                        </span>
+                        <span class="nav-link-text">Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+        <div class="user-profile" data-dropdown data-dropdown-trigger>
+            <div class="user-avatar">
+                <span>AD</span>
+            </div>
+            <div class="user-info">
+                <div class="user-name">Admin User</div>
+                <div class="user-role">Administrator</div>
+            </div>
+        </div>
+    </div>
+</aside>

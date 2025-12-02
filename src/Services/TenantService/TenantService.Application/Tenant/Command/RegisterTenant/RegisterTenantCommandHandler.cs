@@ -1,8 +1,10 @@
 using Common.Application.Result;
 using Common.Application.Interfaces;
+using Common.Domain.Events;
 using TenantService.Application.Common.Interfaces;
 using TenantService.Application.Common.Interfaces.Repositories;
 using TenantService.Application.Common.Interfaces.Authentication;
+using TenantService.Application.Common.Interfaces.Messaging;
 using TenantService.Contracts.Tenant.RegisterTenant;
 using TenantService.Domain.Tenant;
 using TenantService.Domain.User;
@@ -20,17 +22,20 @@ public class RegisterTenantCommandHandler : ICommandHandler<RegisterTenantReques
     private readonly IUserRepository _userRepo;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IUnitOfWork _uow;
+    private readonly ITenantEventPublisher _eventPublisher;
 
     public RegisterTenantCommandHandler(
         ITenantRepository repo,
         IUserRepository userRepo,
         IPasswordHasher passwordHasher,
-        IUnitOfWork uow)
+        IUnitOfWork uow,
+        ITenantEventPublisher eventPublisher)
     {
         _repo = repo;
         _userRepo = userRepo;
         _passwordHasher = passwordHasher;
         _uow = uow;
+        _eventPublisher = eventPublisher;
     }
 
     public async Task<Result<RegisterTenantResponse>> Handle(RegisterTenantRequest request, CancellationToken ct)
@@ -90,6 +95,16 @@ public class RegisterTenantCommandHandler : ICommandHandler<RegisterTenantReques
         _userRepo.Add(user);
 
         await _uow.SaveChangesAsync(ct);
+
+        // Publish TenantCreatedEvent to notify other services
+        var tenantCreatedEvent = new TenantCreatedEvent(
+            TenantId: tenant.Id.Value,
+            Name: tenant.Name,
+            AgencyCode: tenant.AgencyCode,
+            Email: tenant.Email,
+            CreatedAt: tenant.CreatedAt
+        );
+        await _eventPublisher.PublishTenantCreatedAsync(tenantCreatedEvent, ct);
 
         return Result<RegisterTenantResponse>.Success(new RegisterTenantResponse(
             tenant.Id.Value,

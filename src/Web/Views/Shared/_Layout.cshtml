@@ -1,0 +1,87 @@
+﻿@using LicenseManagement.Web.Constants
+@using LicenseManagement.Web.ViewModels.Shared
+@{
+    var pageTitle = ViewData["Title"]?.ToString() ?? "License Management";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@pageTitle - License Management System</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/sidebar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/header.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/cards.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/tables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/forms.css" asp-append-version="true" />
+    
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <!-- Sidebar -->
+    @await Component.InvokeAsync("Sidebar")
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay"></div>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <!-- Header -->
+        @await Component.InvokeAsync("Header", new { title = pageTitle })
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Alerts Container -->
+            <div id="alert-container" class="alert-container">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success" data-auto-dismiss="5000">
+                        <div class="alert-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <p class="alert-message">@TempData["SuccessMessage"]</p>
+                        </div>
+                        <button type="button" class="alert-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger" data-auto-dismiss="5000">
+                        <div class="alert-icon">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <p class="alert-message">@TempData["ErrorMessage"]</p>
+                        </div>
+                        <button type="button" class="alert-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                }
+            </div>
+
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/js/app.js" asp-append-version="true"></script>
+    <script src="~/js/api.js" asp-append-version="true"></script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
