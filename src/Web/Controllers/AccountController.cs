@@ -1,63 +1,92 @@
+using LicenseManagement.Web.Models.Auth;
+using LicenseManagement.Web.Services.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LicenseManagement.Web.Controllers;
 
 public class AccountController : Controller
 {
+    private readonly IAuthService _authService;
     private readonly ILogger<AccountController> _logger;
 
-    public AccountController(ILogger<AccountController> logger)
+    public AccountController(IAuthService authService, ILogger<AccountController> logger)
     {
+        _authService = authService;
         _logger = logger;
     }
 
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
     {
-        ViewData["ReturnUrl"] = returnUrl;
-        return View();
+        // If already authenticated, redirect to dashboard
+        if (_authService.IsAuthenticated())
+        {
+            return RedirectToAction("Index", "Dashboard");
+        }
+
+        var model = new LoginViewModel
+        {
+            ReturnUrl = returnUrl
+        };
+        return View(model);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Login(string email, string password, string? returnUrl = null)
+    public async Task<IActionResult> Login(LoginViewModel model)
     {
-        // TODO: Implement actual authentication
-        if (email == "admin@example.com" && password == "password")
+        if (!ModelState.IsValid)
         {
-            _logger.LogInformation("User logged in: {Email}", email);
+            return View(model);
+        }
+
+        var (success, errorMessage, response) = await _authService.LoginAsync(model.Email, model.Password);
+
+        if (success && response != null)
+        {
+            _logger.LogInformation("User logged in: {Email}", model.Email);
             
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             {
-                return Redirect(returnUrl);
+                return Redirect(model.ReturnUrl);
             }
             return RedirectToAction("Index", "Dashboard");
         }
 
-        TempData["Error"] = "Invalid email or password.";
-        ViewData["ReturnUrl"] = returnUrl;
-        return View();
+        model.ErrorMessage = errorMessage ?? "Invalid email or password.";
+        return View(model);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Logout()
     {
-        // TODO: Implement actual logout
-        _logger.LogInformation("User logged out");
+        var user = _authService.GetCurrentUser();
+        _authService.ClearUserSession();
+        _logger.LogInformation("User logged out: {Email}", user?.Email ?? "Unknown");
         return RedirectToAction(nameof(Login));
     }
 
     [HttpGet]
     public IActionResult Profile()
     {
-        // TODO: Get actual user profile
+        var user = _authService.GetCurrentUser();
+        if (user == null)
+        {
+            return RedirectToAction(nameof(Login));
+        }
+        
+        ViewBag.User = user;
         return View();
     }
 
     [HttpGet]
     public IActionResult Settings()
     {
+        if (!_authService.IsAuthenticated())
+        {
+            return RedirectToAction(nameof(Login));
+        }
         return View();
     }
 

@@ -3,11 +3,11 @@ using LicenseService.Contracts.Common;
 namespace LicenseService.Contracts.Renewals.GetRenewalList;
 
 /// <summary>
-/// DTO for renewal list item
+/// DTO for renewal list item.
+/// Each tenant has their own isolated database, so no TenantId is included.
 /// </summary>
 public record RenewalListItemDto(
     Guid Id,
-    Guid TenantId,
     Guid LicenseId,
     DateTime RenewalDate,
     string Status,

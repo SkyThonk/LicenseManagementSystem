@@ -1,12 +1,5 @@
-using Common.Application.Result;
-using Common.Application.Interfaces;
-using Common.Domain.Events;
-using TenantService.Application.Common.Interfaces;
-using TenantService.Application.Common.Interfaces.Repositories;
 using TenantService.Application.Common.Interfaces.Authentication;
-using TenantService.Application.Common.Interfaces.Messaging;
 using TenantService.Contracts.Tenant.RegisterTenant;
-using TenantService.Domain.Tenant;
 using TenantService.Domain.User;
 using TenantService.Domain.Common.ValueObjects;
 using DomainUser = TenantService.Domain.User.User;
@@ -22,20 +15,17 @@ public class RegisterTenantCommandHandler : ICommandHandler<RegisterTenantReques
     private readonly IUserRepository _userRepo;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IUnitOfWork _uow;
-    private readonly ITenantEventPublisher _eventPublisher;
 
     public RegisterTenantCommandHandler(
         ITenantRepository repo,
         IUserRepository userRepo,
         IPasswordHasher passwordHasher,
-        IUnitOfWork uow,
-        ITenantEventPublisher eventPublisher)
+        IUnitOfWork uow)
     {
         _repo = repo;
         _userRepo = userRepo;
         _passwordHasher = passwordHasher;
         _uow = uow;
-        _eventPublisher = eventPublisher;
     }
 
     public async Task<Result<RegisterTenantResponse>> Handle(RegisterTenantRequest request, CancellationToken ct)
@@ -81,14 +71,14 @@ public class RegisterTenantCommandHandler : ICommandHandler<RegisterTenantReques
 
         _repo.Add(tenant);
 
-        // Create the admin user for the tenant
+        // Create the admin user for the tenant (with Admin role - can manage users but not tenants)
         var passwordHash = _passwordHasher.Hash(request.Password);
         var user = DomainUser.Create(
             request.Email,
             passwordHash,
-            null, // firstName
-            null, // lastName
-            Role.TenantAdmin,
+            request.FirstName,
+            request.LastName,
+            Role.Admin,
             tenant.Id
         );
 
@@ -96,15 +86,8 @@ public class RegisterTenantCommandHandler : ICommandHandler<RegisterTenantReques
 
         await _uow.SaveChangesAsync(ct);
 
-        // Publish TenantCreatedEvent to notify other services
-        var tenantCreatedEvent = new TenantCreatedEvent(
-            TenantId: tenant.Id.Value,
-            Name: tenant.Name,
-            AgencyCode: tenant.AgencyCode,
-            Email: tenant.Email,
-            CreatedAt: tenant.CreatedAt
-        );
-        await _eventPublisher.PublishTenantCreatedAsync(tenantCreatedEvent, ct);
+        // TenantCreatedEvent is raised by the Tenant entity and will be handled
+        // by TenantCreatedEventHandler via Wolverine to publish to Kafka
 
         return Result<RegisterTenantResponse>.Success(new RegisterTenantResponse(
             tenant.Id.Value,

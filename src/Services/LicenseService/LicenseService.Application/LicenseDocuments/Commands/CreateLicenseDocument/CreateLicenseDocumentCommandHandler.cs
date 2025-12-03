@@ -9,7 +9,8 @@ using LicenseService.Domain.Licenses;
 namespace LicenseService.Application.LicenseDocuments.Commands.CreateLicenseDocument;
 
 /// <summary>
-/// Handler for creating a new license document metadata
+/// Handler for creating a new license document metadata.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class CreateLicenseDocumentCommandHandler : ICommandHandler<CreateLicenseDocumentRequest, CreateLicenseDocumentResponse>
 {
@@ -38,7 +39,6 @@ public class CreateLicenseDocumentCommandHandler : ICommandHandler<CreateLicense
 
         // Create the document metadata
         var document = LicenseDocument.Create(
-            request.TenantId,
             new LicenseId(request.LicenseId),
             request.DocumentType,
             request.FileUrl
@@ -49,7 +49,6 @@ public class CreateLicenseDocumentCommandHandler : ICommandHandler<CreateLicense
 
         var response = new CreateLicenseDocumentResponse(
             Id: document.Id.Value,
-            TenantId: document.TenantId,
             LicenseId: document.LicenseId.Value,
             DocumentType: document.DocumentType,
             FileUrl: document.FileUrl,

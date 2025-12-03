@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using LicenseManagement.Web.Services.Abstractions;
+using LicenseManagement.Web.Filters;
 
 namespace LicenseManagement.Web.Controllers;
 
+[RequireAuthentication]
 public class NotificationsController : Controller
 {
     private readonly INotificationService _notificationService;

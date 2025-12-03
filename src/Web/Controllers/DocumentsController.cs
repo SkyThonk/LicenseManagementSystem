@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using LicenseManagement.Web.Services.Abstractions;
 using LicenseManagement.Web.ViewModels.Documents;
+using LicenseManagement.Web.Filters;
 
 namespace LicenseManagement.Web.Controllers;
 
+[RequireAuthentication]
 public class DocumentsController : Controller
 {
     private readonly IDocumentService _documentService;

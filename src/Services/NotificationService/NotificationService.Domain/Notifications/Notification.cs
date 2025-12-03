@@ -6,12 +6,12 @@ namespace NotificationService.Domain.Notifications;
 /// <summary>
 /// Represents a notification record (email, SMS, push notification).
 /// Core entity of the NotificationService.
+/// Each tenant has their own isolated database, so TenantId is not stored in the entity.
 /// </summary>
 public sealed class Notification : Entity<NotificationId>
 {
     private Notification(
         NotificationId id,
-        Guid tenantId,
         string recipient,
         string? subject,
         string message,
@@ -20,7 +20,6 @@ public sealed class Notification : Entity<NotificationId>
         Guid? createdBy = null
     ) : base(id, createdBy)
     {
-        TenantId = tenantId;
         Recipient = recipient;
         Subject = subject;
         Message = message;
@@ -31,11 +30,6 @@ public sealed class Notification : Entity<NotificationId>
 
     // For EF Core
     private Notification() { }
-
-    /// <summary>
-    /// The tenant (government agency) that owns this notification
-    /// </summary>
-    public Guid TenantId { get; private set; }
 
     /// <summary>
     /// Recipient address (email or mobile number)
@@ -81,7 +75,6 @@ public sealed class Notification : Entity<NotificationId>
     /// Creates a new notification
     /// </summary>
     public static Notification Create(
-        Guid tenantId,
         string recipient,
         string message,
         NotificationType notificationType,
@@ -97,7 +90,6 @@ public sealed class Notification : Entity<NotificationId>
 
         var notification = new Notification(
             NotificationId.New(),
-            tenantId,
             recipient,
             subject,
             message,

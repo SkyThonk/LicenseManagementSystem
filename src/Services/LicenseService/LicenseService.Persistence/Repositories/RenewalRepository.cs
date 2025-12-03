@@ -26,13 +26,6 @@ internal sealed class RenewalRepository : Repository<Renewal, RenewalId>, IRenew
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<Renewal>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default)
-    {
-        return await _dataContext.Set<Renewal>()
-            .Where(r => r.TenantId == tenantId)
-            .ToListAsync(cancellationToken);
-    }
-
     public async Task<IEnumerable<Renewal>> GetPendingRenewalsAsync(CancellationToken cancellationToken = default)
     {
         return await _dataContext.Set<Renewal>()
@@ -44,7 +37,6 @@ internal sealed class RenewalRepository : Repository<Renewal, RenewalId>, IRenew
     public async Task<(IEnumerable<Renewal> Items, int TotalCount)> GetPaginatedAsync(
         int pageNumber,
         int pageSize,
-        Guid? tenantId = null,
         LicenseId? licenseId = null,
         string? status = null,
         string? sortBy = null,
@@ -55,11 +47,6 @@ internal sealed class RenewalRepository : Repository<Renewal, RenewalId>, IRenew
             .Include(r => r.License);
 
         // Apply filters
-        if (tenantId.HasValue)
-        {
-            query = query.Where(r => r.TenantId == tenantId.Value);
-        }
-
         if (licenseId != null)
         {
             query = query.Where(r => r.LicenseId == licenseId);

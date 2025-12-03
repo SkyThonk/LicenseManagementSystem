@@ -6,6 +6,28 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Add HTTP context accessor for session access in services
+builder.Services.AddHttpContextAccessor();
+
+// Configure session
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(24);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.Name = ".LicenseManagement.Session";
+});
+
+// Register Authentication service
+builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
+{
+    var tenantServiceUrl = builder.Configuration["TenantServiceUrl"] ?? "http://localhost:5002";
+    client.BaseAddress = new Uri(tenantServiceUrl);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
 // Register HTTP client for API calls
 builder.Services.AddHttpClient<IApiService, ApiService>(client =>
 {
@@ -35,11 +57,14 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
+// Enable session middleware
+app.UseSession();
+
 app.UseAuthorization();
 
 // Route mapping
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Dashboard}/{action=Index}/{id?}");
+    pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();

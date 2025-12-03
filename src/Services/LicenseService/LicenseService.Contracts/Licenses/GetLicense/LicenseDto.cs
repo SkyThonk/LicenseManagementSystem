@@ -1,11 +1,11 @@
 namespace LicenseService.Contracts.Licenses.GetLicense;
 
 /// <summary>
-/// License details DTO
+/// License details DTO.
+/// Each tenant has their own isolated database, so no TenantId is included.
 /// </summary>
 public record LicenseDto(
     Guid Id,
-    Guid TenantId,
     Guid ApplicantId,
     Guid LicenseTypeId,
     string? LicenseTypeName,

@@ -9,7 +9,8 @@ using LicenseService.Domain.Renewals;
 namespace LicenseService.Application.Renewals.Commands.CreateRenewal;
 
 /// <summary>
-/// Handler for creating a new renewal request
+/// Handler for creating a new renewal request.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class CreateRenewalCommandHandler : ICommandHandler<CreateRenewalRequest, CreateRenewalResponse>
 {
@@ -45,7 +46,6 @@ public class CreateRenewalCommandHandler : ICommandHandler<CreateRenewalRequest,
 
         // Create the renewal
         var renewal = Renewal.Create(
-            request.TenantId,
             new LicenseId(request.LicenseId),
             request.RenewalDate
         );
@@ -55,7 +55,6 @@ public class CreateRenewalCommandHandler : ICommandHandler<CreateRenewalRequest,
 
         var response = new CreateRenewalResponse(
             Id: renewal.Id.Value,
-            TenantId: renewal.TenantId,
             LicenseId: renewal.LicenseId.Value,
             RenewalDate: renewal.RenewalDate,
             Status: renewal.Status.ToString(),

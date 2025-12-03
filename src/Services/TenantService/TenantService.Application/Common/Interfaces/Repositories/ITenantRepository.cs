@@ -14,6 +14,7 @@ public interface ITenantRepository
     Task<TenantEntity?> GetByAgencyCodeAsync(string agencyCode, CancellationToken cancellationToken = default);
     Task<bool> ExistsByAgencyCodeAsync(string agencyCode, CancellationToken cancellationToken = default);
     Task<IEnumerable<TenantEntity>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<TenantEntity>> GetAllActiveAsync(CancellationToken cancellationToken = default);
     Task<(IEnumerable<TenantEntity> Items, int TotalCount)> GetPaginatedAsync(
         int pageNumber,
         int pageSize,

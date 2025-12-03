@@ -6,12 +6,12 @@ namespace NotificationService.Domain.Templates;
 /// <summary>
 /// Represents a notification template for reusable content.
 /// Tenants can define their own templates like "License Approved", "Renewal Reminder", etc.
+/// Each tenant has their own isolated database, so TenantId is not stored in the entity.
 /// </summary>
 public sealed class NotificationTemplate : Entity<NotificationTemplateId>
 {
     private NotificationTemplate(
         NotificationTemplateId id,
-        Guid tenantId,
         string templateName,
         string subject,
         string body,
@@ -19,7 +19,6 @@ public sealed class NotificationTemplate : Entity<NotificationTemplateId>
         Guid? createdBy = null
     ) : base(id, createdBy)
     {
-        TenantId = tenantId;
         TemplateName = templateName;
         Subject = subject;
         Body = body;
@@ -29,11 +28,6 @@ public sealed class NotificationTemplate : Entity<NotificationTemplateId>
 
     // For EF Core
     private NotificationTemplate() { }
-
-    /// <summary>
-    /// The tenant (government agency) that owns this template
-    /// </summary>
-    public Guid TenantId { get; private set; }
 
     /// <summary>
     /// Name of the template (e.g., "License Approved", "Renewal Reminder")
@@ -64,7 +58,6 @@ public sealed class NotificationTemplate : Entity<NotificationTemplateId>
     /// Creates a new notification template
     /// </summary>
     public static NotificationTemplate Create(
-        Guid tenantId,
         string templateName,
         string subject,
         string body,
@@ -82,7 +75,6 @@ public sealed class NotificationTemplate : Entity<NotificationTemplateId>
 
         return new NotificationTemplate(
             NotificationTemplateId.New(),
-            tenantId,
             templateName,
             subject,
             body,

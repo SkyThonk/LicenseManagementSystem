@@ -9,7 +9,8 @@ using LicenseService.Domain.LicenseTypes;
 namespace LicenseService.Application.Licenses.Commands.CreateLicense;
 
 /// <summary>
-/// Handler for creating a new license application
+/// Handler for creating a new license application.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class CreateLicenseCommandHandler : ICommandHandler<CreateLicenseRequest, CreateLicenseResponse>
 {
@@ -38,7 +39,6 @@ public class CreateLicenseCommandHandler : ICommandHandler<CreateLicenseRequest,
 
         // Create the license
         var license = License.Create(
-            request.TenantId,
             request.ApplicantId,
             new LicenseTypeId(request.LicenseTypeId)
         );
@@ -51,7 +51,6 @@ public class CreateLicenseCommandHandler : ICommandHandler<CreateLicenseRequest,
 
         var response = new CreateLicenseResponse(
             Id: license.Id.Value,
-            TenantId: license.TenantId,
             ApplicantId: license.ApplicantId,
             LicenseTypeId: license.LicenseTypeId.Value,
             Status: license.Status.ToString(),

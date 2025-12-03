@@ -7,7 +7,8 @@ using NotificationService.Domain.Notifications;
 namespace NotificationService.Application.Notifications.Queries.GetNotification;
 
 /// <summary>
-/// Handler for getting notification details
+/// Handler for getting notification details.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class GetNotificationQueryHandler : IQueryHandler<GetNotificationQuery, GetNotificationResponse>
 {
@@ -22,7 +23,6 @@ public class GetNotificationQueryHandler : IQueryHandler<GetNotificationQuery, G
     {
         var notification = await _notificationRepo.GetByIdAsync(
             new NotificationId(query.Request.NotificationId), 
-            query.TenantId, 
             ct);
 
         if (notification == null)
@@ -33,7 +33,6 @@ public class GetNotificationQueryHandler : IQueryHandler<GetNotificationQuery, G
 
         return Result<GetNotificationResponse>.Success(new GetNotificationResponse(
             notification.Id.Value,
-            notification.TenantId,
             notification.Recipient,
             notification.Subject,
             notification.Message,
@@ -50,6 +49,5 @@ public class GetNotificationQueryHandler : IQueryHandler<GetNotificationQuery, G
 /// Query for getting notification details
 /// </summary>
 public record GetNotificationQuery(
-    GetNotificationRequest Request,
-    Guid TenantId
+    GetNotificationRequest Request
 );

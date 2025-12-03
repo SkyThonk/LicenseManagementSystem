@@ -4,7 +4,8 @@ using LicenseService.Domain.Licenses;
 namespace LicenseService.Application.Common.Interfaces.Repositories;
 
 /// <summary>
-/// Repository interface for LicenseDocument entities
+/// Repository interface for LicenseDocument entities.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public interface ILicenseDocumentRepository
 {
@@ -13,5 +14,5 @@ public interface ILicenseDocumentRepository
     void Delete(LicenseDocument document);
     Task<LicenseDocument?> GetByIdAsync(LicenseDocumentId id, CancellationToken cancellationToken = default);
     Task<IEnumerable<LicenseDocument>> GetByLicenseIdAsync(LicenseId licenseId, CancellationToken cancellationToken = default);
-    Task<IEnumerable<LicenseDocument>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<LicenseDocument>> GetAllAsync(CancellationToken cancellationToken = default);
 }

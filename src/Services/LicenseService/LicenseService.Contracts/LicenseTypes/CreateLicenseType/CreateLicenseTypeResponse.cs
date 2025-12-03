@@ -1,11 +1,11 @@
 namespace LicenseService.Contracts.LicenseTypes.CreateLicenseType;
 
 /// <summary>
-/// Response after creating a new license type
+/// Response after creating a new license type.
+/// Each tenant has their own isolated database, so no TenantId is included.
 /// </summary>
 public record CreateLicenseTypeResponse(
     Guid Id,
-    Guid TenantId,
     string Name,
     string? Description,
     decimal FeeAmount,

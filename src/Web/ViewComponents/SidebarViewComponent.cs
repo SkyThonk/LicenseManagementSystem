@@ -1,14 +1,24 @@
 using Microsoft.AspNetCore.Mvc;
 using LicenseManagement.Web.ViewModels.Shared;
 using LicenseManagement.Web.Constants;
+using LicenseManagement.Web.Services.Abstractions;
 
 namespace LicenseManagement.Web.ViewComponents;
 
 public class SidebarViewComponent : ViewComponent
 {
+    private readonly IAuthService _authService;
+
+    public SidebarViewComponent(IAuthService authService)
+    {
+        _authService = authService;
+    }
+
     public IViewComponentResult Invoke()
     {
         var currentPath = HttpContext.Request.Path.Value?.ToLower() ?? "";
+        var user = _authService.GetCurrentUser();
+        var isTenantAdmin = user?.Role == "TenantAdmin";
         
         var items = new List<SidebarItem>
         {
@@ -18,15 +28,24 @@ public class SidebarViewComponent : ViewComponent
                 Icon = "fas fa-th-large",
                 Url = AppRoutes.Dashboard.Index,
                 IsActive = currentPath == "/" || currentPath.StartsWith("/dashboard")
-            },
-            new SidebarItem
+            }
+        };
+
+        // Only show Tenants menu for TenantAdmin role
+        if (isTenantAdmin)
+        {
+            items.Add(new SidebarItem
             {
                 Title = "Tenants",
                 Icon = "fas fa-building",
                 Url = AppRoutes.Tenants.Index,
                 IsActive = currentPath.StartsWith("/tenants"),
                 BadgeText = null
-            },
+            });
+        }
+
+        items.AddRange(new[]
+        {
             new SidebarItem
             {
                 Title = "Licenses",
@@ -55,7 +74,7 @@ public class SidebarViewComponent : ViewComponent
                 Url = AppRoutes.Notifications.Index,
                 IsActive = currentPath.StartsWith("/notifications")
             }
-        };
+        });
 
         return View(items);
     }

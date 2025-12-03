@@ -9,7 +9,8 @@ using NotificationService.Domain.Notifications;
 namespace NotificationService.Application.Notifications.Commands.SendNotification;
 
 /// <summary>
-/// Handler for sending a notification
+/// Handler for sending a notification.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class SendNotificationCommandHandler : ICommandHandler<SendNotificationCommand, SendNotificationResponse>
 {
@@ -46,7 +47,6 @@ public class SendNotificationCommandHandler : ICommandHandler<SendNotificationCo
         {
             var template = await _templateRepo.GetByIdAsync(
                 new Domain.Templates.NotificationTemplateId(request.TemplateId.Value), 
-                command.TenantId, 
                 ct);
 
             if (template == null)
@@ -69,7 +69,6 @@ public class SendNotificationCommandHandler : ICommandHandler<SendNotificationCo
 
         // Create the notification
         var notification = Notification.Create(
-            tenantId: command.TenantId,
             recipient: request.Recipient,
             message: message,
             notificationType: notificationType,
@@ -94,6 +93,5 @@ public class SendNotificationCommandHandler : ICommandHandler<SendNotificationCo
 /// </summary>
 public record SendNotificationCommand(
     SendNotificationRequest Request,
-    Guid TenantId,
     Guid? UserId
 );

@@ -1,3 +1,5 @@
+using Common.Domain.Abstractions;
+
 namespace Common.Domain.Events;
 
 /// <summary>
@@ -7,4 +9,4 @@ namespace Common.Domain.Events;
 public record TenantDeletedEvent(
     Guid TenantId,
     DateTime DeletedAt
-);
+) : IDomainEvent;

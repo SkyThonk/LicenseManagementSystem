@@ -7,7 +7,8 @@ using LicenseService.Domain.Licenses;
 namespace LicenseService.Application.LicenseDocuments.Queries.GetLicenseDocumentList;
 
 /// <summary>
-/// Handler for getting list of license documents by license ID
+/// Handler for getting list of license documents by license ID.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class GetLicenseDocumentListQueryHandler : IQueryHandler<GetLicenseDocumentListRequest, GetLicenseDocumentListResponse>
 {
@@ -25,7 +26,6 @@ public class GetLicenseDocumentListQueryHandler : IQueryHandler<GetLicenseDocume
 
         var documentItems = documents.Select(d => new LicenseDocumentListItemDto(
             Id: d.Id.Value,
-            TenantId: d.TenantId,
             LicenseId: d.LicenseId.Value,
             DocumentType: d.DocumentType,
             FileUrl: d.FileUrl,

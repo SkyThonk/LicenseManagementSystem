@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using LicenseManagement.Web.Services.Abstractions;
+using LicenseManagement.Web.Filters;
 
 namespace LicenseManagement.Web.Controllers;
 
+[RequireAuthentication]
 public class PaymentsController : Controller
 {
     private readonly IPaymentService _paymentService;

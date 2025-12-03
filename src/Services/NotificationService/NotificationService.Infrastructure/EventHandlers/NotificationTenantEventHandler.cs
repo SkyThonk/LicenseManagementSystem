@@ -11,7 +11,7 @@ namespace NotificationService.Infrastructure.EventHandlers;
 
 /// <summary>
 /// Handles tenant lifecycle events for NotificationService.
-/// Provisions and manages tenant-specific notification resources.
+/// Each tenant has their own isolated database - no TenantId column needed.
 /// </summary>
 public class NotificationTenantEventHandler : ITenantEventHandler
 {
@@ -27,8 +27,8 @@ public class NotificationTenantEventHandler : ITenantEventHandler
     }
 
     /// <summary>
-    /// Provisions tenant-specific resources when a new tenant is created.
-    /// Creates default notification templates for the new tenant.
+    /// Provisions tenant-specific database when a new tenant is created.
+    /// Creates and migrates the notification database for the new tenant.
     /// </summary>
     public async Task HandleTenantCreatedAsync(TenantCreatedEvent @event, CancellationToken cancellationToken = default)
     {
@@ -47,15 +47,16 @@ public class NotificationTenantEventHandler : ITenantEventHandler
             var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync(cancellationToken);
             if (pendingMigrations.Any())
             {
-                _logger.LogInformation("Applying {Count} pending migrations for NotificationService", pendingMigrations.Count());
+                _logger.LogInformation("Applying {Count} pending migrations for NotificationService tenant {TenantId}", 
+                    pendingMigrations.Count(), @event.TenantId);
                 await dbContext.Database.MigrateAsync(cancellationToken);
             }
 
-            // Seed default notification templates for the new tenant
-            await SeedDefaultTemplatesAsync(dbContext, @event.TenantId, cancellationToken);
+            // Seed default notification templates for the new tenant database
+            await SeedDefaultTemplatesAsync(dbContext, cancellationToken);
 
             _logger.LogInformation(
-                "Successfully provisioned NotificationService resources for tenant {TenantId}",
+                "Successfully provisioned NotificationService database for tenant {TenantId}",
                 @event.TenantId);
         }
         catch (Exception ex)
@@ -84,14 +85,16 @@ public class NotificationTenantEventHandler : ITenantEventHandler
             "Processing TenantDeletedEvent for tenant {TenantId}",
             @event.TenantId);
 
+        // With separate databases per tenant, we don't need to filter by TenantId
+        // The tenant's database will be handled separately (could drop/archive the entire database)
         try
         {
             using var scope = _serviceProvider.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
 
-            // Soft delete all notifications for the tenant
+            // Soft delete all notifications in this tenant's database
             var notifications = await dbContext.Notifications
-                .Where(n => n.TenantId == @event.TenantId && !n.IsDeleted)
+                .Where(n => !n.IsDeleted)
                 .ToListAsync(cancellationToken);
 
             foreach (var notification in notifications)
@@ -99,9 +102,9 @@ public class NotificationTenantEventHandler : ITenantEventHandler
                 notification.IsDeleted = true;
             }
 
-            // Soft delete all templates for the tenant
+            // Soft delete all templates in this tenant's database
             var templates = await dbContext.NotificationTemplates
-                .Where(t => t.TenantId == @event.TenantId && !t.IsDeleted)
+                .Where(t => !t.IsDeleted)
                 .ToListAsync(cancellationToken);
 
             foreach (var template in templates)
@@ -127,17 +130,16 @@ public class NotificationTenantEventHandler : ITenantEventHandler
     }
 
     /// <summary>
-    /// Seeds default notification templates for a new tenant.
+    /// Seeds default notification templates for a new tenant database.
     /// </summary>
-    private async Task SeedDefaultTemplatesAsync(DataContext dbContext, Guid tenantId, CancellationToken cancellationToken)
+    private async Task SeedDefaultTemplatesAsync(DataContext dbContext, CancellationToken cancellationToken)
     {
-        // Check if tenant already has templates (idempotency)
-        var existingTemplates = await dbContext.NotificationTemplates
-            .AnyAsync(t => t.TenantId == tenantId, cancellationToken);
+        // Check if database already has templates (idempotency)
+        var existingTemplates = await dbContext.NotificationTemplates.AnyAsync(cancellationToken);
 
         if (existingTemplates)
         {
-            _logger.LogDebug("Tenant {TenantId} already has notification templates, skipping seed", tenantId);
+            _logger.LogDebug("Tenant database already has notification templates, skipping seed");
             return;
         }
 
@@ -145,35 +147,30 @@ public class NotificationTenantEventHandler : ITenantEventHandler
         var defaultTemplates = new[]
         {
             NotificationTemplate.Create(
-                tenantId: tenantId,
                 templateName: "License Approved",
                 subject: "Your License Application Has Been Approved",
                 body: "Dear {ApplicantName},\n\nWe are pleased to inform you that your license application (Reference: {LicenseNumber}) has been approved.\n\nYour license is valid until {ExpiryDate}.\n\nThank you for your application.\n\nBest regards,\n{AgencyName}",
                 notificationType: NotificationType.Email
             ),
             NotificationTemplate.Create(
-                tenantId: tenantId,
                 templateName: "License Rejected",
                 subject: "Your License Application Has Been Rejected",
                 body: "Dear {ApplicantName},\n\nWe regret to inform you that your license application (Reference: {ReferenceNumber}) has been rejected.\n\nReason: {RejectionReason}\n\nIf you have any questions, please contact our office.\n\nBest regards,\n{AgencyName}",
                 notificationType: NotificationType.Email
             ),
             NotificationTemplate.Create(
-                tenantId: tenantId,
                 templateName: "Renewal Reminder",
                 subject: "License Renewal Reminder - {LicenseNumber}",
                 body: "Dear {ApplicantName},\n\nThis is a reminder that your license ({LicenseNumber}) will expire on {ExpiryDate}.\n\nPlease submit your renewal application before the expiry date to avoid any disruption.\n\nThank you.\n\nBest regards,\n{AgencyName}",
                 notificationType: NotificationType.Email
             ),
             NotificationTemplate.Create(
-                tenantId: tenantId,
                 templateName: "Payment Received",
                 subject: "Payment Confirmation - {PaymentReference}",
                 body: "Dear {ApplicantName},\n\nWe have received your payment of {PaymentAmount} for {PaymentDescription}.\n\nPayment Reference: {PaymentReference}\nDate: {PaymentDate}\n\nThank you for your payment.\n\nBest regards,\n{AgencyName}",
                 notificationType: NotificationType.Email
             ),
             NotificationTemplate.Create(
-                tenantId: tenantId,
                 templateName: "SMS Renewal Reminder",
                 subject: "Renewal Reminder",
                 body: "Your license {LicenseNumber} expires on {ExpiryDate}. Please renew before expiry.",
@@ -184,9 +181,6 @@ public class NotificationTenantEventHandler : ITenantEventHandler
         dbContext.NotificationTemplates.AddRange(defaultTemplates);
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation(
-            "Seeded {Count} default notification templates for tenant {TenantId}",
-            defaultTemplates.Length,
-            tenantId);
+        _logger.LogInformation("Seeded {Count} default notification templates", defaultTemplates.Length);
     }
 }

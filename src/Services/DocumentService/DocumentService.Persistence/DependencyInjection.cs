@@ -1,4 +1,5 @@
 using Common.Domain.Abstractions;
+using Common.Infrastructure.Migration;
 using DocumentService.Application.Common.Interfaces;
 using DocumentService.Application.Common.Interfaces.Repositories;
 using DocumentService.Persistence.Data;
@@ -60,6 +61,9 @@ public static class DependencyInjection
         services.AddScoped<IDocumentRepository, DocumentRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Add database migration service to run at startup
+        services.AddSimpleDatabaseMigration<DataContext>();
 
         return services;
     }

@@ -7,12 +7,12 @@ namespace LicenseService.Domain.Renewals;
 /// <summary>
 /// Represents a license renewal request.
 /// Supports background job processing and expiry logic.
+/// Each tenant has their own isolated database, so TenantId is not stored in the entity.
 /// </summary>
 public sealed class Renewal : Entity<RenewalId>
 {
     private Renewal(
         RenewalId id,
-        Guid tenantId,
         LicenseId licenseId,
         DateTime renewalDate,
         RenewalStatus status,
@@ -20,7 +20,6 @@ public sealed class Renewal : Entity<RenewalId>
         Guid? createdBy = null
     ) : base(id, createdBy)
     {
-        TenantId = tenantId;
         LicenseId = licenseId;
         RenewalDate = renewalDate;
         Status = status;
@@ -29,11 +28,6 @@ public sealed class Renewal : Entity<RenewalId>
 
     // For EF Core
     private Renewal() { }
-
-    /// <summary>
-    /// The tenant (government agency) that owns this renewal
-    /// </summary>
-    public Guid TenantId { get; private set; }
 
     /// <summary>
     /// The license being renewed
@@ -64,14 +58,12 @@ public sealed class Renewal : Entity<RenewalId>
     /// Creates a new renewal request
     /// </summary>
     public static Renewal Create(
-        Guid tenantId,
         LicenseId licenseId,
         DateTime renewalDate,
         Guid? createdBy = null)
     {
         return new Renewal(
             new RenewalId(Guid.NewGuid()),
-            tenantId,
             licenseId,
             renewalDate,
             RenewalStatus.Pending,

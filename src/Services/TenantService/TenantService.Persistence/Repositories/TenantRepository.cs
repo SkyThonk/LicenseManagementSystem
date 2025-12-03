@@ -28,6 +28,13 @@ internal sealed class TenantRepository : Repository<Tenant, TenantId>, ITenantRe
             .AnyAsync(t => t.AgencyCode.ToLower() == agencyCode.ToLower(), cancellationToken);
     }
 
+    public async Task<IEnumerable<Tenant>> GetAllActiveAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dataContext.Set<Tenant>()
+            .Where(t => t.IsActive)
+            .ToListAsync(cancellationToken);
+    }
+
     /// <summary>
     /// Retrieve paginated list of tenants with optional search, filtering and sorting
     /// </summary>

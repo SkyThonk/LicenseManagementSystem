@@ -6,12 +6,12 @@ namespace LicenseService.Domain.LicenseDocuments;
 /// <summary>
 /// Represents document metadata for a license.
 /// The actual file is stored in DocumentService; this contains only metadata.
+/// Each tenant has their own isolated database, so TenantId is not stored in the entity.
 /// </summary>
 public sealed class LicenseDocument : Entity<LicenseDocumentId>
 {
     private LicenseDocument(
         LicenseDocumentId id,
-        Guid tenantId,
         LicenseId licenseId,
         string documentType,
         string fileUrl,
@@ -19,7 +19,6 @@ public sealed class LicenseDocument : Entity<LicenseDocumentId>
         Guid? createdBy = null
     ) : base(id, createdBy)
     {
-        TenantId = tenantId;
         LicenseId = licenseId;
         DocumentType = documentType;
         FileUrl = fileUrl;
@@ -28,11 +27,6 @@ public sealed class LicenseDocument : Entity<LicenseDocumentId>
 
     // For EF Core
     private LicenseDocument() { }
-
-    /// <summary>
-    /// The tenant (government agency) that owns this document
-    /// </summary>
-    public Guid TenantId { get; private set; }
 
     /// <summary>
     /// The license this document is associated with
@@ -63,7 +57,6 @@ public sealed class LicenseDocument : Entity<LicenseDocumentId>
     /// Creates a new license document
     /// </summary>
     public static LicenseDocument Create(
-        Guid tenantId,
         LicenseId licenseId,
         string documentType,
         string fileUrl,
@@ -77,7 +70,6 @@ public sealed class LicenseDocument : Entity<LicenseDocumentId>
 
         return new LicenseDocument(
             new LicenseDocumentId(Guid.NewGuid()),
-            tenantId,
             licenseId,
             documentType,
             fileUrl,

@@ -17,11 +17,6 @@ internal class LicenseConfiguration : IEntityTypeConfiguration<License>
             value => new LicenseId(value)
         );
 
-        builder.Property(l => l.TenantId)
-            .IsRequired();
-
-        builder.HasIndex(l => l.TenantId);
-
         builder.Property(l => l.ApplicantId)
             .IsRequired();
 

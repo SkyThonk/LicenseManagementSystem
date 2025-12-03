@@ -8,7 +8,8 @@ using LicenseService.Domain.Licenses;
 namespace LicenseService.Application.Renewals.Queries.GetRenewalList;
 
 /// <summary>
-/// Handler for getting paginated list of renewals
+/// Handler for getting paginated list of renewals.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class GetRenewalListQueryHandler : IQueryHandler<GetRenewalListRequest, GetRenewalListResponse>
 {
@@ -28,7 +29,6 @@ public class GetRenewalListQueryHandler : IQueryHandler<GetRenewalListRequest, G
         var (items, totalCount) = await _renewalRepository.GetPaginatedAsync(
             request.Page,
             request.PageSize,
-            request.TenantId,
             licenseId,
             request.Status,
             request.SortBy,
@@ -38,7 +38,6 @@ public class GetRenewalListQueryHandler : IQueryHandler<GetRenewalListRequest, G
 
         var renewalItems = items.Select(r => new RenewalListItemDto(
             Id: r.Id.Value,
-            TenantId: r.TenantId,
             LicenseId: r.LicenseId.Value,
             RenewalDate: r.RenewalDate,
             Status: r.Status.ToString(),

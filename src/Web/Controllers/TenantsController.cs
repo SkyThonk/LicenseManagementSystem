@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using LicenseManagement.Web.Services.Abstractions;
 using LicenseManagement.Web.ViewModels.Tenants;
+using LicenseManagement.Web.Filters;
 
 namespace LicenseManagement.Web.Controllers;
 
+[RequireRole("TenantAdmin")]
 public class TenantsController : Controller
 {
     private readonly ITenantService _tenantService;

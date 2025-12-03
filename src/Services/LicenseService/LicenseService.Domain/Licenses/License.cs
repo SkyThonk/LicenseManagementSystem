@@ -6,13 +6,12 @@ namespace LicenseService.Domain.Licenses;
 
 /// <summary>
 /// Represents a license application record (core aggregate root).
-/// Each license belongs to a tenant and is associated with an applicant from IdentityService.
+/// Each tenant has their own isolated database, so TenantId is not stored in the entity.
 /// </summary>
 public sealed class License : Entity<LicenseId>
 {
     private License(
         LicenseId id,
-        Guid tenantId,
         Guid applicantId,
         LicenseTypeId licenseTypeId,
         LicenseStatus status,
@@ -22,7 +21,6 @@ public sealed class License : Entity<LicenseId>
         Guid? createdBy = null
     ) : base(id, createdBy)
     {
-        TenantId = tenantId;
         ApplicantId = applicantId;
         LicenseTypeId = licenseTypeId;
         Status = status;
@@ -33,11 +31,6 @@ public sealed class License : Entity<LicenseId>
 
     // For EF Core
     private License() { }
-
-    /// <summary>
-    /// The tenant (government agency) that owns this license
-    /// </summary>
-    public Guid TenantId { get; private set; }
 
     /// <summary>
     /// The applicant who applied for the license (from IdentityService)
@@ -78,14 +71,12 @@ public sealed class License : Entity<LicenseId>
     /// Creates a new license application
     /// </summary>
     public static License Create(
-        Guid tenantId,
         Guid applicantId,
         LicenseTypeId licenseTypeId,
         Guid? createdBy = null)
     {
         var license = new License(
             new LicenseId(Guid.NewGuid()),
-            tenantId,
             applicantId,
             licenseTypeId,
             LicenseStatus.Draft,

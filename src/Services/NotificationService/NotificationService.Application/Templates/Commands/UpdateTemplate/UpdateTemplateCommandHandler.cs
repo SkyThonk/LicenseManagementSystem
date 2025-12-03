@@ -9,7 +9,8 @@ using NotificationService.Domain.Templates;
 namespace NotificationService.Application.Templates.Commands.UpdateTemplate;
 
 /// <summary>
-/// Handler for updating a notification template
+/// Handler for updating a notification template.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class UpdateTemplateCommandHandler : ICommandHandler<UpdateTemplateCommand, UpdateTemplateResponse>
 {
@@ -30,7 +31,6 @@ public class UpdateTemplateCommandHandler : ICommandHandler<UpdateTemplateComman
         
         var template = await _templateRepo.GetByIdAsync(
             new NotificationTemplateId(request.TemplateId), 
-            command.TenantId, 
             ct);
 
         if (template == null)
@@ -54,7 +54,7 @@ public class UpdateTemplateCommandHandler : ICommandHandler<UpdateTemplateComman
         // Check if new template name conflicts with existing
         if (!string.IsNullOrEmpty(request.TemplateName) && 
             request.TemplateName != template.TemplateName &&
-            await _templateRepo.ExistsByNameAsync(request.TemplateName, command.TenantId, ct))
+            await _templateRepo.ExistsByNameAsync(request.TemplateName, ct))
         {
             return Result<UpdateTemplateResponse>.Failure(
                 new ValidationError($"Template with name '{request.TemplateName}' already exists"));
@@ -85,6 +85,5 @@ public class UpdateTemplateCommandHandler : ICommandHandler<UpdateTemplateComman
 /// </summary>
 public record UpdateTemplateCommand(
     UpdateTemplateRequest Request,
-    Guid TenantId,
     Guid? UserId
 );

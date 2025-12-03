@@ -7,7 +7,8 @@ using LicenseService.Contracts.Licenses.GetLicenseList;
 namespace LicenseService.Application.Licenses.Queries.GetLicenseList;
 
 /// <summary>
-/// Handler for getting paginated list of licenses
+/// Handler for getting paginated list of licenses.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class GetLicenseListQueryHandler : IQueryHandler<GetLicenseListRequest, GetLicenseListResponse>
 {
@@ -23,7 +24,6 @@ public class GetLicenseListQueryHandler : IQueryHandler<GetLicenseListRequest, G
         var (items, totalCount) = await _licenseRepository.GetPaginatedAsync(
             request.Page,
             request.PageSize,
-            request.TenantId,
             request.ApplicantId,
             request.Status,
             request.SortBy,
@@ -33,7 +33,6 @@ public class GetLicenseListQueryHandler : IQueryHandler<GetLicenseListRequest, G
 
         var licenseItems = items.Select(l => new LicenseListItemDto(
             l.Id.Value,
-            l.TenantId,
             l.ApplicantId,
             l.LicenseTypeId.Value,
             l.LicenseType?.Name,

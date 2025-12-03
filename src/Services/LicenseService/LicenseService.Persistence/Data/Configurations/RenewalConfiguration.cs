@@ -17,11 +17,6 @@ internal class RenewalConfiguration : IEntityTypeConfiguration<Renewal>
             value => new RenewalId(value)
         );
 
-        builder.Property(r => r.TenantId)
-            .IsRequired();
-
-        builder.HasIndex(r => r.TenantId);
-
         builder.Property(r => r.LicenseId).HasConversion(
             id => id.Value,
             value => new LicenseId(value)

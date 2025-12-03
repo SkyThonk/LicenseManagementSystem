@@ -7,7 +7,8 @@ using LicenseService.Domain.Licenses;
 namespace LicenseService.Application.Licenses.Queries.GetLicense;
 
 /// <summary>
-/// Handler for getting a license by ID
+/// Handler for getting a license by ID.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class GetLicenseQueryHandler : IQueryHandler<GetLicenseRequest, LicenseDto>
 {
@@ -28,7 +29,6 @@ public class GetLicenseQueryHandler : IQueryHandler<GetLicenseRequest, LicenseDt
 
         var dto = new LicenseDto(
             license.Id.Value,
-            license.TenantId,
             license.ApplicantId,
             license.LicenseTypeId.Value,
             license.LicenseType?.Name,

@@ -12,6 +12,7 @@ using LicenseService.Application.Common.Interfaces;
 using LicenseService.Application.Common.Interfaces.Repositories;
 using LicenseService.Persistence.Repositories;
 using Common.Domain.Abstractions;
+using Common.Infrastructure.Migration;
 
 namespace LicenseService.Persistence;
 
@@ -61,6 +62,9 @@ public static class DependencyInjection
         services.AddScoped<ILicenseDocumentRepository, LicenseDocumentRepository>();
         services.AddScoped<ILicenseStatusHistoryRepository, LicenseStatusHistoryRepository>();
         services.AddScoped<IRenewalRepository, RenewalRepository>();
+
+        // Add database migration service to run at startup
+        services.AddSimpleDatabaseMigration<DataContext>();
 
         return services;
     }

@@ -6,7 +6,8 @@ using NotificationService.Contracts.Notifications.GetNotifications;
 namespace NotificationService.Application.Notifications.Queries.GetNotifications;
 
 /// <summary>
-/// Handler for getting notifications list
+/// Handler for getting notifications list.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class GetNotificationsQueryHandler : IQueryHandler<GetNotificationsQuery, GetNotificationsResponse>
 {
@@ -19,7 +20,7 @@ public class GetNotificationsQueryHandler : IQueryHandler<GetNotificationsQuery,
 
     public async Task<Result<GetNotificationsResponse>> Handle(GetNotificationsQuery query, CancellationToken ct)
     {
-        var notifications = await _notificationRepo.GetByTenantIdAsync(query.TenantId, ct);
+        var notifications = await _notificationRepo.GetAllAsync(ct);
 
         // Filter by status if specified
         if (!string.IsNullOrEmpty(query.Request.Status))
@@ -59,6 +60,5 @@ public class GetNotificationsQueryHandler : IQueryHandler<GetNotificationsQuery,
 /// Query for getting notifications list
 /// </summary>
 public record GetNotificationsQuery(
-    GetNotificationsRequest Request,
-    Guid TenantId
+    GetNotificationsRequest Request
 );

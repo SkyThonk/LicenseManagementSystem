@@ -1,4 +1,5 @@
 using Common.Domain.Abstractions;
+using Common.Infrastructure.Migration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,6 +64,9 @@ public static class DependencyInjection
         services.AddScoped<INotificationTemplateRepository, NotificationTemplateRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Add database migration service to run at startup
+        services.AddSimpleDatabaseMigration<DataContext>();
 
         return services;
     }

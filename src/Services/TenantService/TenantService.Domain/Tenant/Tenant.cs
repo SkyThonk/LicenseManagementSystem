@@ -1,4 +1,5 @@
 using Common.Domain.Abstractions;
+using Common.Domain.Events;
 using TenantService.Domain.Common.Enum;
 using TenantService.Domain.Common.ValueObjects;
 
@@ -96,6 +97,15 @@ public class Tenant : Entity<TenantId>
             Phone = phone
         };
 
+        // Raise domain event for tenant creation
+        tenant.AddDomainEvent(new TenantCreatedEvent(
+            TenantId: tenant.Id.Value,
+            Name: tenant.Name,
+            AgencyCode: tenant.AgencyCode,
+            Email: tenant.Email,
+            CreatedAt: tenant.CreatedAt
+        ));
+
         return tenant;
     }
 
@@ -115,24 +125,64 @@ public class Tenant : Entity<TenantId>
         if (!string.IsNullOrWhiteSpace(email)) Email = email;
         if (logo is not null) Logo = logo;
         SetUpdatedBy(updatedBy);
+        UpdatedAt = DateTime.UtcNow;
+
+        // Raise domain event for tenant update
+        AddDomainEvent(new TenantUpdatedEvent(
+            TenantId: Id.Value,
+            Name: Name,
+            AgencyCode: AgencyCode,
+            Email: Email,
+            IsActive: IsActive,
+            UpdatedAt: UpdatedAt
+        ));
     }
 
     public void Activate(Guid? updatedBy = null)
     {
         IsActive = true;
         SetUpdatedBy(updatedBy);
+        UpdatedAt = DateTime.UtcNow;
+
+        // Raise domain event for tenant activation
+        AddDomainEvent(new TenantUpdatedEvent(
+            TenantId: Id.Value,
+            Name: Name,
+            AgencyCode: AgencyCode,
+            Email: Email,
+            IsActive: IsActive,
+            UpdatedAt: UpdatedAt
+        ));
     }
 
     public void Deactivate(Guid? updatedBy = null)
     {
         IsActive = false;
         SetUpdatedBy(updatedBy);
+        UpdatedAt = DateTime.UtcNow;
+
+        // Raise domain event for tenant deactivation
+        AddDomainEvent(new TenantUpdatedEvent(
+            TenantId: Id.Value,
+            Name: Name,
+            AgencyCode: AgencyCode,
+            Email: Email,
+            IsActive: IsActive,
+            UpdatedAt: UpdatedAt
+        ));
     }
 
     public void Delete(Guid? updatedBy = null)
     {
         IsDeleted = true;
         SetUpdatedBy(updatedBy);
+        UpdatedAt = DateTime.UtcNow;
+
+        // Raise domain event for tenant deletion
+        AddDomainEvent(new TenantDeletedEvent(
+            TenantId: Id.Value,
+            DeletedAt: UpdatedAt
+        ));
     }
 }
 

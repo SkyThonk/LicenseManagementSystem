@@ -9,6 +9,7 @@ namespace LicenseService.Infrastructure.EventHandlers;
 /// <summary>
 /// Handles tenant lifecycle events for LicenseService.
 /// Provisions and manages tenant-specific database resources.
+/// With separate databases per tenant, this handler manages database-level operations.
 /// </summary>
 public class LicenseTenantEventHandler : ITenantEventHandler
 {
@@ -25,8 +26,8 @@ public class LicenseTenantEventHandler : ITenantEventHandler
 
     /// <summary>
     /// Provisions tenant-specific resources when a new tenant is created.
-    /// Since we use a shared database with tenant isolation via TenantId column,
-    /// we ensure the database schema is up-to-date and optionally seed default data.
+    /// With separate databases per tenant, this ensures the database schema is up-to-date
+    /// and optionally seeds default data for the tenant's database.
     /// </summary>
     public async Task HandleTenantCreatedAsync(TenantCreatedEvent @event, CancellationToken cancellationToken = default)
     {
@@ -47,8 +48,8 @@ public class LicenseTenantEventHandler : ITenantEventHandler
                 await _dbContext.Database.MigrateAsync(cancellationToken);
             }
 
-            // Optionally seed default license types for the new tenant
-            await SeedDefaultLicenseTypesAsync(@event.TenantId, cancellationToken);
+            // Optionally seed default license types for the new tenant's database
+            await SeedDefaultLicenseTypesAsync(cancellationToken);
 
             _logger.LogInformation(
                 "Successfully provisioned LicenseService resources for tenant {TenantId}",
@@ -80,10 +81,10 @@ public class LicenseTenantEventHandler : ITenantEventHandler
             "Processing TenantDeletedEvent for tenant {TenantId}",
             @event.TenantId);
 
-        // Soft delete all licenses for the tenant
+        // With separate databases per tenant, soft delete all entities in the tenant's database
         // In a real scenario, you might archive data or move to cold storage
         var licenses = await _dbContext.Licenses
-            .Where(l => l.TenantId == @event.TenantId && !l.IsDeleted)
+            .Where(l => !l.IsDeleted)
             .ToListAsync(cancellationToken);
 
         foreach (var license in licenses)
@@ -92,7 +93,7 @@ public class LicenseTenantEventHandler : ITenantEventHandler
         }
 
         var licenseTypes = await _dbContext.LicenseTypes
-            .Where(lt => lt.TenantId == @event.TenantId && !lt.IsDeleted)
+            .Where(lt => !lt.IsDeleted)
             .ToListAsync(cancellationToken);
 
         foreach (var licenseType in licenseTypes)
@@ -110,17 +111,16 @@ public class LicenseTenantEventHandler : ITenantEventHandler
     }
 
     /// <summary>
-    /// Seeds default license types for a new tenant.
+    /// Seeds default license types for a new tenant's database.
     /// </summary>
-    private async Task SeedDefaultLicenseTypesAsync(Guid tenantId, CancellationToken cancellationToken)
+    private async Task SeedDefaultLicenseTypesAsync(CancellationToken cancellationToken)
     {
         // Check if tenant already has license types (idempotency)
-        var existingTypes = await _dbContext.LicenseTypes
-            .AnyAsync(lt => lt.TenantId == tenantId, cancellationToken);
+        var existingTypes = await _dbContext.LicenseTypes.AnyAsync(cancellationToken);
 
         if (existingTypes)
         {
-            _logger.LogDebug("Tenant {TenantId} already has license types, skipping seed", tenantId);
+            _logger.LogDebug("Tenant database already has license types, skipping seed");
             return;
         }
 
@@ -129,19 +129,16 @@ public class LicenseTenantEventHandler : ITenantEventHandler
         var defaultTypes = new[]
         {
             Domain.LicenseTypes.LicenseType.Create(
-                tenantId: tenantId,
                 name: "Professional License",
                 description: "Standard professional license for practitioners",
                 feeAmount: 150.00m
             ),
             Domain.LicenseTypes.LicenseType.Create(
-                tenantId: tenantId,
                 name: "Business License",
                 description: "License for business operations",
                 feeAmount: 250.00m
             ),
             Domain.LicenseTypes.LicenseType.Create(
-                tenantId: tenantId,
                 name: "Temporary Permit",
                 description: "Short-term permit for temporary activities",
                 feeAmount: 50.00m
@@ -152,8 +149,7 @@ public class LicenseTenantEventHandler : ITenantEventHandler
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
-            "Seeded {Count} default license types for tenant {TenantId}",
-            defaultTypes.Length,
-            tenantId);
+            "Seeded {Count} default license types for tenant database",
+            defaultTypes.Length);
     }
 }

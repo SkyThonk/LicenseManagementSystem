@@ -7,7 +7,8 @@ using LicenseService.Domain.Renewals;
 namespace LicenseService.Application.Renewals.Queries.GetRenewal;
 
 /// <summary>
-/// Handler for getting a renewal by ID
+/// Handler for getting a renewal by ID.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class GetRenewalQueryHandler : IQueryHandler<GetRenewalRequest, RenewalDto>
 {
@@ -28,7 +29,6 @@ public class GetRenewalQueryHandler : IQueryHandler<GetRenewalRequest, RenewalDt
 
         var dto = new RenewalDto(
             Id: renewal.Id.Value,
-            TenantId: renewal.TenantId,
             LicenseId: renewal.LicenseId.Value,
             RenewalDate: renewal.RenewalDate,
             Status: renewal.Status.ToString(),

@@ -1,3 +1,5 @@
+using Common.Domain.Abstractions;
+
 namespace Common.Domain.Events;
 
 /// <summary>
@@ -11,4 +13,4 @@ public record TenantUpdatedEvent(
     string Email,
     bool IsActive,
     DateTime UpdatedAt
-);
+) : IDomainEvent;

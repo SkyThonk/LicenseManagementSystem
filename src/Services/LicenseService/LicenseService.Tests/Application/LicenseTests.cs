@@ -10,16 +10,14 @@ public class LicenseTests
     public void Create_Should_Return_License_With_Draft_Status()
     {
         // Arrange
-        var tenantId = Guid.NewGuid();
         var applicantId = Guid.NewGuid();
         var licenseTypeId = new LicenseTypeId(Guid.NewGuid());
 
         // Act
-        var license = License.Create(tenantId, applicantId, licenseTypeId);
+        var license = License.Create(applicantId, licenseTypeId);
 
         // Assert
         Assert.NotNull(license);
-        Assert.Equal(tenantId, license.TenantId);
         Assert.Equal(applicantId, license.ApplicantId);
         Assert.Equal(licenseTypeId, license.LicenseTypeId);
         Assert.Equal(LicenseStatus.Draft, license.Status);
@@ -30,7 +28,6 @@ public class LicenseTests
     {
         // Arrange
         var license = License.Create(
-            Guid.NewGuid(),
             Guid.NewGuid(),
             new LicenseTypeId(Guid.NewGuid())
         );
@@ -47,7 +44,6 @@ public class LicenseTests
     {
         // Arrange
         var license = License.Create(
-            Guid.NewGuid(),
             Guid.NewGuid(),
             new LicenseTypeId(Guid.NewGuid())
         );

@@ -8,7 +8,8 @@ using NotificationService.Persistence.Data;
 namespace NotificationService.Persistence.Repositories;
 
 /// <summary>
-/// Repository for Notification entity persistence operations
+/// Repository for Notification entity persistence operations.
+/// Each tenant has their own database, so no TenantId filtering is needed.
 /// </summary>
 internal sealed class NotificationRepository : Repository<Notification, NotificationId>, INotificationRepository
 {
@@ -17,16 +18,9 @@ internal sealed class NotificationRepository : Repository<Notification, Notifica
     {
     }
 
-    public async Task<Notification?> GetByIdAsync(NotificationId id, Guid tenantId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Notification>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _dataContext.Set<Notification>()
-            .FirstOrDefaultAsync(n => n.Id == id && n.TenantId == tenantId, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<Notification>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default)
-    {
-        return await _dataContext.Set<Notification>()
-            .Where(n => n.TenantId == tenantId)
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync(cancellationToken);
     }
@@ -40,10 +34,10 @@ internal sealed class NotificationRepository : Repository<Notification, Notifica
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Notification>> GetByRecipientAsync(string recipient, Guid tenantId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<Notification>> GetByRecipientAsync(string recipient, CancellationToken cancellationToken = default)
     {
         return await _dataContext.Set<Notification>()
-            .Where(n => n.Recipient == recipient && n.TenantId == tenantId)
+            .Where(n => n.Recipient == recipient)
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync(cancellationToken);
     }

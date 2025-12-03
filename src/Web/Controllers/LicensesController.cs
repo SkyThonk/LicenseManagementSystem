@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using LicenseManagement.Web.Services.Abstractions;
 using LicenseManagement.Web.ViewModels.Licenses;
+using LicenseManagement.Web.Filters;
 
 namespace LicenseManagement.Web.Controllers;
 
+[RequireAuthentication]
 public class LicensesController : Controller
 {
     private readonly ILicenseService _licenseService;

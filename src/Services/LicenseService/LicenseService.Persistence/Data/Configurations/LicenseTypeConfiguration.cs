@@ -15,17 +15,12 @@ internal class LicenseTypeConfiguration : IEntityTypeConfiguration<LicenseType>
             value => new LicenseTypeId(value)
         );
 
-        builder.Property(lt => lt.TenantId)
-            .IsRequired();
-
-        builder.HasIndex(lt => lt.TenantId);
-
         builder.Property(lt => lt.Name)
             .HasMaxLength(200)
             .IsRequired();
 
-        // Unique constraint on TenantId + Name
-        builder.HasIndex(lt => new { lt.TenantId, lt.Name })
+        // Unique constraint on Name
+        builder.HasIndex(lt => lt.Name)
             .IsUnique();
 
         builder.Property(lt => lt.Description)

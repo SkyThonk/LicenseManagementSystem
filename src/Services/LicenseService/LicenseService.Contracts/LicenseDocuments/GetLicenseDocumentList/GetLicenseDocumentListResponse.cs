@@ -1,11 +1,11 @@
 namespace LicenseService.Contracts.LicenseDocuments.GetLicenseDocumentList;
 
 /// <summary>
-/// DTO for license document list item
+/// DTO for license document list item.
+/// Each tenant has their own isolated database, so no TenantId is included.
 /// </summary>
 public record LicenseDocumentListItemDto(
     Guid Id,
-    Guid TenantId,
     Guid LicenseId,
     string DocumentType,
     string FileUrl,

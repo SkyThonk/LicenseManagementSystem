@@ -16,23 +16,15 @@ internal sealed class LicenseTypeRepository : Repository<LicenseType, LicenseTyp
     {
     }
 
-    public async Task<IEnumerable<LicenseType>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default)
     {
         return await _dataContext.Set<LicenseType>()
-            .Where(lt => lt.TenantId == tenantId)
-            .ToListAsync(cancellationToken);
-    }
-
-    public async Task<bool> ExistsByNameAsync(Guid tenantId, string name, CancellationToken cancellationToken = default)
-    {
-        return await _dataContext.Set<LicenseType>()
-            .AnyAsync(lt => lt.TenantId == tenantId && lt.Name.ToLower() == name.ToLower(), cancellationToken);
+            .AnyAsync(lt => lt.Name.ToLower() == name.ToLower(), cancellationToken);
     }
 
     public async Task<(IEnumerable<LicenseType> Items, int TotalCount)> GetPaginatedAsync(
         int pageNumber,
         int pageSize,
-        Guid? tenantId = null,
         string? searchTerm = null,
         string? sortBy = null,
         bool sortDescending = false,
@@ -41,11 +33,6 @@ internal sealed class LicenseTypeRepository : Repository<LicenseType, LicenseTyp
         IQueryable<LicenseType> query = _dataContext.Set<LicenseType>();
 
         // Apply filters
-        if (tenantId.HasValue)
-        {
-            query = query.Where(lt => lt.TenantId == tenantId.Value);
-        }
-
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
             var term = searchTerm.ToLower();

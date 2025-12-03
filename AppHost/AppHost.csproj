@@ -22,6 +22,7 @@
     <ProjectReference Include="..\src\Services\DocumentService\DocumentService.Api\DocumentService.Api.csproj" />
     <ProjectReference Include="..\src\Services\NotificationService\NotificationService.Api\NotificationService.Api.csproj" />
     <ProjectReference Include="..\src\Services\PaymentService\PaymentService.Api\PaymentService.Api.csproj" />
+    <ProjectReference Include="..\src\Web\LicenseManagement.Web.csproj" />
   </ItemGroup>
 
 </Project>

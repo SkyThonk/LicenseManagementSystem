@@ -7,7 +7,8 @@ using NotificationService.Persistence.Data;
 namespace NotificationService.Persistence.Repositories;
 
 /// <summary>
-/// Repository for NotificationTemplate entity persistence operations
+/// Repository for NotificationTemplate entity persistence operations.
+/// Each tenant has their own database, so no TenantId filtering is needed.
 /// </summary>
 internal sealed class NotificationTemplateRepository : Repository<NotificationTemplate, NotificationTemplateId>, INotificationTemplateRepository
 {
@@ -16,37 +17,30 @@ internal sealed class NotificationTemplateRepository : Repository<NotificationTe
     {
     }
 
-    public async Task<NotificationTemplate?> GetByIdAsync(NotificationTemplateId id, Guid tenantId, CancellationToken cancellationToken = default)
+    public async Task<NotificationTemplate?> GetByNameAsync(string templateName, CancellationToken cancellationToken = default)
     {
         return await _dataContext.Set<NotificationTemplate>()
-            .FirstOrDefaultAsync(t => t.Id == id && t.TenantId == tenantId, cancellationToken);
+            .FirstOrDefaultAsync(t => t.TemplateName.ToLower() == templateName.ToLower(), cancellationToken);
     }
 
-    public async Task<NotificationTemplate?> GetByNameAsync(string templateName, Guid tenantId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<NotificationTemplate>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _dataContext.Set<NotificationTemplate>()
-            .FirstOrDefaultAsync(t => t.TemplateName.ToLower() == templateName.ToLower() && t.TenantId == tenantId, cancellationToken);
-    }
-
-    public async Task<IReadOnlyList<NotificationTemplate>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default)
-    {
-        return await _dataContext.Set<NotificationTemplate>()
-            .Where(t => t.TenantId == tenantId)
             .OrderBy(t => t.TemplateName)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<NotificationTemplate>> GetActiveTemplatesAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<NotificationTemplate>> GetActiveTemplatesAsync(CancellationToken cancellationToken = default)
     {
         return await _dataContext.Set<NotificationTemplate>()
-            .Where(t => t.TenantId == tenantId && t.IsActive)
+            .Where(t => t.IsActive)
             .OrderBy(t => t.TemplateName)
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<bool> ExistsByNameAsync(string templateName, Guid tenantId, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsByNameAsync(string templateName, CancellationToken cancellationToken = default)
     {
         return await _dataContext.Set<NotificationTemplate>()
-            .AnyAsync(t => t.TemplateName.ToLower() == templateName.ToLower() && t.TenantId == tenantId, cancellationToken);
+            .AnyAsync(t => t.TemplateName.ToLower() == templateName.ToLower(), cancellationToken);
     }
 }

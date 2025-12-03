@@ -3,16 +3,16 @@ using NotificationService.Domain.Templates;
 namespace NotificationService.Application.Common.Interfaces.Repositories;
 
 /// <summary>
-/// Repository interface for NotificationTemplate entity
+/// Repository interface for NotificationTemplate entity.
+/// Each tenant has their own database, so no TenantId filtering is needed.
 /// </summary>
 public interface INotificationTemplateRepository
 {
     void Add(NotificationTemplate template);
     void Update(NotificationTemplate template);
     Task<NotificationTemplate?> GetByIdAsync(NotificationTemplateId id, CancellationToken cancellationToken = default);
-    Task<NotificationTemplate?> GetByIdAsync(NotificationTemplateId id, Guid tenantId, CancellationToken cancellationToken = default);
-    Task<NotificationTemplate?> GetByNameAsync(string templateName, Guid tenantId, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<NotificationTemplate>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<NotificationTemplate>> GetActiveTemplatesAsync(Guid tenantId, CancellationToken cancellationToken = default);
-    Task<bool> ExistsByNameAsync(string templateName, Guid tenantId, CancellationToken cancellationToken = default);
+    Task<NotificationTemplate?> GetByNameAsync(string templateName, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<NotificationTemplate>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<NotificationTemplate>> GetActiveTemplatesAsync(CancellationToken cancellationToken = default);
+    Task<bool> ExistsByNameAsync(string templateName, CancellationToken cancellationToken = default);
 }

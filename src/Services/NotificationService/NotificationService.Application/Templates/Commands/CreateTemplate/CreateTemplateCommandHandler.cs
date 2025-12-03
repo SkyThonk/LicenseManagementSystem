@@ -9,7 +9,8 @@ using NotificationService.Domain.Templates;
 namespace NotificationService.Application.Templates.Commands.CreateTemplate;
 
 /// <summary>
-/// Handler for creating a notification template
+/// Handler for creating a notification template.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class CreateTemplateCommandHandler : ICommandHandler<CreateTemplateCommand, CreateTemplateResponse>
 {
@@ -35,8 +36,8 @@ public class CreateTemplateCommandHandler : ICommandHandler<CreateTemplateComman
                 new ValidationError($"Invalid notification type: {request.NotificationType}. Valid values are: Email, SMS, Push"));
         }
 
-        // Check if template name already exists for this tenant
-        if (await _templateRepo.ExistsByNameAsync(request.TemplateName, command.TenantId, ct))
+        // Check if template name already exists (within this tenant's database)
+        if (await _templateRepo.ExistsByNameAsync(request.TemplateName, ct))
         {
             return Result<CreateTemplateResponse>.Failure(
                 new ValidationError($"Template with name '{request.TemplateName}' already exists"));
@@ -44,7 +45,6 @@ public class CreateTemplateCommandHandler : ICommandHandler<CreateTemplateComman
 
         // Create the template
         var template = NotificationTemplate.Create(
-            tenantId: command.TenantId,
             templateName: request.TemplateName,
             subject: request.Subject,
             body: request.Body,
@@ -68,6 +68,5 @@ public class CreateTemplateCommandHandler : ICommandHandler<CreateTemplateComman
 /// </summary>
 public record CreateTemplateCommand(
     CreateTemplateRequest Request,
-    Guid TenantId,
     Guid? UserId
 );

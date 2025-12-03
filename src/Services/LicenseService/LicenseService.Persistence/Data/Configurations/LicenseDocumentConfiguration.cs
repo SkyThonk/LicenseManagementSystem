@@ -16,11 +16,6 @@ internal class LicenseDocumentConfiguration : IEntityTypeConfiguration<LicenseDo
             value => new LicenseDocumentId(value)
         );
 
-        builder.Property(ld => ld.TenantId)
-            .IsRequired();
-
-        builder.HasIndex(ld => ld.TenantId);
-
         builder.Property(ld => ld.LicenseId).HasConversion(
             id => id.Value,
             value => new LicenseId(value)

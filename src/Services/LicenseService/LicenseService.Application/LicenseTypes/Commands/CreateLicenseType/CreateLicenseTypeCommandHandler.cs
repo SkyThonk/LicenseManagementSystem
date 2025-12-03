@@ -8,7 +8,8 @@ using LicenseService.Domain.LicenseTypes;
 namespace LicenseService.Application.LicenseTypes.Commands.CreateLicenseType;
 
 /// <summary>
-/// Handler for creating a new license type
+/// Handler for creating a new license type.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class CreateLicenseTypeCommandHandler : ICommandHandler<CreateLicenseTypeRequest, CreateLicenseTypeResponse>
 {
@@ -25,16 +26,15 @@ public class CreateLicenseTypeCommandHandler : ICommandHandler<CreateLicenseType
 
     public async Task<Result<CreateLicenseTypeResponse>> Handle(CreateLicenseTypeRequest request, CancellationToken ct)
     {
-        // Check if license type with same name already exists for this tenant
-        if (await _licenseTypeRepository.ExistsByNameAsync(request.TenantId, request.Name, ct))
+        // Check if license type with same name already exists
+        if (await _licenseTypeRepository.ExistsByNameAsync(request.Name, ct))
         {
             return Result<CreateLicenseTypeResponse>.Failure(
-                new ValidationError("License type with this name already exists for this tenant"));
+                new ValidationError("License type with this name already exists"));
         }
 
         // Create the license type
         var licenseType = LicenseType.Create(
-            request.TenantId,
             request.Name,
             request.Description,
             request.FeeAmount
@@ -45,7 +45,6 @@ public class CreateLicenseTypeCommandHandler : ICommandHandler<CreateLicenseType
 
         var response = new CreateLicenseTypeResponse(
             Id: licenseType.Id.Value,
-            TenantId: licenseType.TenantId,
             Name: licenseType.Name,
             Description: licenseType.Description,
             FeeAmount: licenseType.FeeAmount,

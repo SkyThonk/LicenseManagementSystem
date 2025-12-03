@@ -149,4 +149,23 @@ paymentServiceApi = paymentServiceApi
     .WithEnvironment("JwtSettings__Issuer", jwtIssuer)
     .WithEnvironment("JwtSettings__Audience", jwtAudience);
 
+// Register Web UI project with reference to TenantService for API calls
+var webApp = builder.AddProject<Projects.LicenseManagement_Web>("WebApp")
+    .WithHttpEndpoint(port: 5000, name: "webapp-http")
+    .WithReference(tenantServiceApi)
+    .WithReference(licenseServiceApi)
+    .WithReference(documentServiceApi)
+    .WithReference(notificationServiceApi)
+    .WithReference(paymentServiceApi)
+    .WithEnvironment("TenantServiceUrl", "http://localhost:5002")
+    .WithEnvironment("LicenseServiceUrl", "http://localhost:5003")
+    .WithEnvironment("DocumentServiceUrl", "http://localhost:5004")
+    .WithEnvironment("NotificationServiceUrl", "http://localhost:5005")
+    .WithEnvironment("PaymentServiceUrl", "http://localhost:5006");
+
+if (!builder.Environment.IsDevelopment())
+{
+    webApp = webApp.WithHttpsEndpoint(port: 7000, name: "webapp-https");
+}
+
 builder.Build().Run();

@@ -18,9 +18,6 @@ public class NotificationTemplateConfiguration : IEntityTypeConfiguration<Notifi
                 value => new NotificationTemplateId(value))
             .IsRequired();
 
-        builder.Property(x => x.TenantId)
-            .IsRequired();
-
         builder.Property(x => x.TemplateName)
             .HasMaxLength(200)
             .IsRequired();
@@ -41,8 +38,7 @@ public class NotificationTemplateConfiguration : IEntityTypeConfiguration<Notifi
             .IsRequired();
 
         // Indexes
-        builder.HasIndex(x => x.TenantId);
-        builder.HasIndex(x => new { x.TenantId, x.TemplateName }).IsUnique();
-        builder.HasIndex(x => new { x.TenantId, x.IsActive });
+        builder.HasIndex(x => x.TemplateName).IsUnique();
+        builder.HasIndex(x => x.IsActive);
     }
 }

@@ -17,13 +17,6 @@ internal sealed class LicenseRepository : Repository<License, LicenseId>, ILicen
     {
     }
 
-    public async Task<IEnumerable<License>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default)
-    {
-        return await _dataContext.Set<License>()
-            .Where(l => l.TenantId == tenantId)
-            .ToListAsync(cancellationToken);
-    }
-
     public async Task<IEnumerable<License>> GetByApplicantIdAsync(Guid applicantId, CancellationToken cancellationToken = default)
     {
         return await _dataContext.Set<License>()
@@ -34,7 +27,6 @@ internal sealed class LicenseRepository : Repository<License, LicenseId>, ILicen
     public async Task<(IEnumerable<License> Items, int TotalCount)> GetPaginatedAsync(
         int pageNumber,
         int pageSize,
-        Guid? tenantId = null,
         Guid? applicantId = null,
         string? status = null,
         string? sortBy = null,
@@ -45,11 +37,6 @@ internal sealed class LicenseRepository : Repository<License, LicenseId>, ILicen
             .Include(l => l.LicenseType);
 
         // Apply filters
-        if (tenantId.HasValue)
-        {
-            query = query.Where(l => l.TenantId == tenantId.Value);
-        }
-
         if (applicantId.HasValue)
         {
             query = query.Where(l => l.ApplicantId == applicantId.Value);

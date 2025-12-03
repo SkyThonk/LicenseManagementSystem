@@ -3,11 +3,11 @@ using LicenseService.Contracts.Common;
 namespace LicenseService.Contracts.LicenseTypes.GetLicenseTypeList;
 
 /// <summary>
-/// DTO for license type list item
+/// DTO for license type list item.
+/// Each tenant has their own isolated database, so no TenantId is included.
 /// </summary>
 public record LicenseTypeListItemDto(
     Guid Id,
-    Guid TenantId,
     string Name,
     string? Description,
     decimal FeeAmount,

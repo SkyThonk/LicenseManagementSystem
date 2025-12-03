@@ -23,11 +23,4 @@ internal sealed class LicenseDocumentRepository : Repository<LicenseDocument, Li
             .Where(ld => ld.LicenseId == licenseId)
             .ToListAsync(cancellationToken);
     }
-
-    public async Task<IEnumerable<LicenseDocument>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default)
-    {
-        return await _dataContext.Set<LicenseDocument>()
-            .Where(ld => ld.TenantId == tenantId)
-            .ToListAsync(cancellationToken);
-    }
 }

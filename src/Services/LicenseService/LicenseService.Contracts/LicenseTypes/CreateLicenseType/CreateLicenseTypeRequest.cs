@@ -3,12 +3,10 @@ using System.ComponentModel.DataAnnotations;
 namespace LicenseService.Contracts.LicenseTypes.CreateLicenseType;
 
 /// <summary>
-/// Request to create a new license type
+/// Request to create a new license type.
+/// Each tenant has their own isolated database, so no TenantId is required.
 /// </summary>
 public record CreateLicenseTypeRequest(
-    [Required]
-    Guid TenantId,
-
     [Required]
     [MaxLength(200)]
     string Name,

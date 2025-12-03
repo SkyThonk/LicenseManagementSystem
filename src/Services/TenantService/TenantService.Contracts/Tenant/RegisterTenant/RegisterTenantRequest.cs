@@ -47,8 +47,16 @@ public record RegisterTenantRequest(
     string Email,
 
     [Required]
+    [MaxLength(100)]
+    string FirstName,
+
+    [Required]
+    [MaxLength(100)]
+    string LastName,
+
+    [Required]
     [MinLength(6)]
-    [MaxLength(20)]
+    [MaxLength(100)]
     string Password,
 
     string? Logo

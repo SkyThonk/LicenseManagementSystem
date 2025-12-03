@@ -6,7 +6,8 @@ using NotificationService.Contracts.Templates.GetTemplates;
 namespace NotificationService.Application.Templates.Queries.GetTemplates;
 
 /// <summary>
-/// Handler for getting templates list
+/// Handler for getting templates list.
+/// Each tenant has their own isolated database, so no TenantId filtering is needed.
 /// </summary>
 public class GetTemplatesQueryHandler : IQueryHandler<GetTemplatesQuery, GetTemplatesResponse>
 {
@@ -20,8 +21,8 @@ public class GetTemplatesQueryHandler : IQueryHandler<GetTemplatesQuery, GetTemp
     public async Task<Result<GetTemplatesResponse>> Handle(GetTemplatesQuery query, CancellationToken ct)
     {
         var templates = query.Request.ActiveOnly
-            ? await _templateRepo.GetActiveTemplatesAsync(query.TenantId, ct)
-            : await _templateRepo.GetByTenantIdAsync(query.TenantId, ct);
+            ? await _templateRepo.GetActiveTemplatesAsync(ct)
+            : await _templateRepo.GetAllAsync(ct);
 
         var templateDtos = templates
             .Select(t => new TemplateDto(
@@ -42,6 +43,5 @@ public class GetTemplatesQueryHandler : IQueryHandler<GetTemplatesQuery, GetTemp
 /// Query for getting templates list
 /// </summary>
 public record GetTemplatesQuery(
-    GetTemplatesRequest Request,
-    Guid TenantId
+    GetTemplatesRequest Request
 );

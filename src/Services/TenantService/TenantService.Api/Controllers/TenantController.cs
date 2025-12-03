@@ -3,18 +3,22 @@ using TenantService.Contracts.Tenant.GetTenantProfile;
 using TenantService.Contracts.Tenant.UpdateTenant;
 using TenantService.Contracts.Tenant.BlockTenant;
 using TenantService.Contracts.Tenant.GetTenantList;
+using TenantService.Contracts.Tenant.GetAllTenantsForMigration;
 using Common.Application.Result;
 using Wolverine;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using TenantService.Api.Extensions;
 
 namespace TenantService.Api.Controllers;
 
 /// <summary>
 /// API Controller for managing government agencies (tenants)
+/// TenantAdmin role required for all endpoints except migration endpoint
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = "TenantAdmin")]
 public class TenantController : ControllerBase
 {
     private readonly IMessageBus _messageBus;
@@ -22,6 +26,19 @@ public class TenantController : ControllerBase
     public TenantController(IMessageBus messageBus)
     {
         _messageBus = messageBus;
+    }
+
+    /// <summary>
+    /// Get all active tenants for database migration (Open API - No authentication required)
+    /// </summary>
+    [HttpGet("migration/all")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAllForMigration(CancellationToken ct)
+    {
+        var request = new GetAllTenantsForMigrationRequest();
+        var result = await _messageBus.InvokeAsync<Result<GetAllTenantsForMigrationResponse>>(request, ct);
+        
+        return result.ToActionResult(this);
     }
 
     /// <summary>

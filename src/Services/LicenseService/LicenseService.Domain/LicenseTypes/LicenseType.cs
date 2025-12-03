@@ -3,21 +3,19 @@ using Common.Domain.Abstractions;
 namespace LicenseService.Domain.LicenseTypes;
 
 /// <summary>
-/// Represents a license type/category that can be defined per tenant.
-/// Each tenant can define their own license categories (e.g., Medical License, Driver License, etc.)
+/// Represents a license type/category.
+/// Each tenant has their own isolated database, so TenantId is not stored in the entity.
 /// </summary>
 public sealed class LicenseType : Entity<LicenseTypeId>
 {
     private LicenseType(
         LicenseTypeId id,
-        Guid tenantId,
         string name,
         string? description,
         decimal feeAmount,
         Guid? createdBy = null
     ) : base(id, createdBy)
     {
-        TenantId = tenantId;
         Name = name;
         Description = description;
         FeeAmount = feeAmount;
@@ -25,11 +23,6 @@ public sealed class LicenseType : Entity<LicenseTypeId>
 
     // For EF Core
     private LicenseType() { }
-
-    /// <summary>
-    /// The tenant (government agency) that owns this license type
-    /// </summary>
-    public Guid TenantId { get; private set; }
 
     /// <summary>
     /// Name of the license type (e.g., "Medical License", "Driver License")
@@ -50,7 +43,6 @@ public sealed class LicenseType : Entity<LicenseTypeId>
     /// Creates a new license type
     /// </summary>
     public static LicenseType Create(
-        Guid tenantId,
         string name,
         string? description,
         decimal feeAmount,
@@ -64,7 +56,6 @@ public sealed class LicenseType : Entity<LicenseTypeId>
 
         return new LicenseType(
             new LicenseTypeId(Guid.NewGuid()),
-            tenantId,
             name,
             description,
             feeAmount,
