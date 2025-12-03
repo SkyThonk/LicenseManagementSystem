@@ -61,4 +61,45 @@ internal sealed class PaymentRepository : Repository<Payment, PaymentId>, IPayme
             .Take(batchSize)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<(IReadOnlyList<Payment> Items, int TotalCount)> GetPaginatedAsync(
+        Guid tenantId,
+        int page,
+        int pageSize,
+        Guid? licenseId = null,
+        Guid? applicantId = null,
+        string? status = null,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<Payment> query = _dataContext.Set<Payment>()
+            .Where(p => p.TenantId == tenantId);
+
+        // Apply filters
+        if (licenseId.HasValue)
+        {
+            query = query.Where(p => p.LicenseId == licenseId.Value);
+        }
+
+        if (applicantId.HasValue)
+        {
+            query = query.Where(p => p.ApplicantId == applicantId.Value);
+        }
+
+        if (!string.IsNullOrEmpty(status) && Enum.TryParse<PaymentStatus>(status, true, out var statusEnum))
+        {
+            query = query.Where(p => p.Status == statusEnum);
+        }
+
+        // Get total count before pagination
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // Apply ordering and pagination at SQL level
+        var items = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
 }

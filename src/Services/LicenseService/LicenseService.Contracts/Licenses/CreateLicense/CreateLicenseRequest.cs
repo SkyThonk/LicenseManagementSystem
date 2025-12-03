@@ -7,9 +7,9 @@ namespace LicenseService.Contracts.Licenses.CreateLicense;
 /// Each tenant has their own isolated database, so no TenantId is required.
 /// </summary>
 public record CreateLicenseRequest(
-    [Required]
+    [Required(ErrorMessage = "Applicant ID is required")]
     Guid ApplicantId,
 
-    [Required]
+    [Required(ErrorMessage = "License type ID is required")]
     Guid LicenseTypeId
 );

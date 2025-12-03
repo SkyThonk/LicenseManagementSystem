@@ -1,9 +1,14 @@
 namespace NotificationService.Contracts.Templates.GetTemplates;
 
 /// <summary>
-/// Response with list of templates
+/// Response with paginated list of templates
 /// </summary>
-public record GetTemplatesResponse(IReadOnlyList<TemplateDto> Templates);
+public record GetTemplatesResponse(
+    IReadOnlyList<TemplateDto> Templates,
+    int TotalCount,
+    int Page,
+    int PageSize
+);
 
 public record TemplateDto(
     Guid TemplateId,

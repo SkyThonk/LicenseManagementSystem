@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace LicenseService.Contracts.Renewals.ProcessRenewal;
 
@@ -6,9 +7,9 @@ namespace LicenseService.Contracts.Renewals.ProcessRenewal;
 /// Request to process a renewal (approve/reject)
 /// </summary>
 public record ProcessRenewalRequest(
-    [Required]
+    [property: JsonIgnore]
     Guid Id,
 
-    [Required]
+    [Required(ErrorMessage = "Approval decision is required")]
     bool Approve
 );

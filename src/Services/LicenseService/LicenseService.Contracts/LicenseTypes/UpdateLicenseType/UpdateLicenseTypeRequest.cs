@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace LicenseService.Contracts.LicenseTypes.UpdateLicenseType;
 
@@ -6,16 +7,17 @@ namespace LicenseService.Contracts.LicenseTypes.UpdateLicenseType;
 /// Request to update a license type
 /// </summary>
 public record UpdateLicenseTypeRequest(
+    [property: JsonIgnore]
     Guid Id,
 
-    [Required]
-    [MaxLength(200)]
+    [Required(ErrorMessage = "Name is required")]
+    [MaxLength(200, ErrorMessage = "Name cannot exceed 200 characters")]
     string Name,
 
-    [MaxLength(500)]
+    [MaxLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
     string? Description,
 
-    [Required]
-    [Range(0, double.MaxValue)]
+    [Required(ErrorMessage = "Fee amount is required")]
+    [Range(0, double.MaxValue, ErrorMessage = "Fee amount must be non-negative")]
     decimal FeeAmount
 );

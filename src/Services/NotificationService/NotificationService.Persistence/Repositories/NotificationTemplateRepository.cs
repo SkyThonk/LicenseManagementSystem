@@ -23,13 +23,6 @@ internal sealed class NotificationTemplateRepository : Repository<NotificationTe
             .FirstOrDefaultAsync(t => t.TemplateName.ToLower() == templateName.ToLower(), cancellationToken);
     }
 
-    public async Task<IReadOnlyList<NotificationTemplate>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await _dataContext.Set<NotificationTemplate>()
-            .OrderBy(t => t.TemplateName)
-            .ToListAsync(cancellationToken);
-    }
-
     public async Task<IReadOnlyList<NotificationTemplate>> GetActiveTemplatesAsync(CancellationToken cancellationToken = default)
     {
         return await _dataContext.Set<NotificationTemplate>()
@@ -42,5 +35,32 @@ internal sealed class NotificationTemplateRepository : Repository<NotificationTe
     {
         return await _dataContext.Set<NotificationTemplate>()
             .AnyAsync(t => t.TemplateName.ToLower() == templateName.ToLower(), cancellationToken);
+    }
+
+    public async Task<(IReadOnlyList<NotificationTemplate> Items, int TotalCount)> GetPaginatedAsync(
+        int page,
+        int pageSize,
+        bool activeOnly = false,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<NotificationTemplate> query = _dataContext.Set<NotificationTemplate>();
+
+        // Apply active filter if specified
+        if (activeOnly)
+        {
+            query = query.Where(t => t.IsActive);
+        }
+
+        // Get total count before pagination
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // Apply ordering and pagination at SQL level
+        var items = await query
+            .OrderBy(t => t.TemplateName)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
     }
 }

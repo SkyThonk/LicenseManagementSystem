@@ -8,6 +8,7 @@ namespace NotificationService.Application.Notifications.Queries.GetNotifications
 /// <summary>
 /// Handler for getting notifications list.
 /// Each tenant has their own isolated database, so no TenantId filtering is needed.
+/// Pagination is performed at the SQL level for efficiency.
 /// </summary>
 public class GetNotificationsQueryHandler : IQueryHandler<GetNotificationsQuery, GetNotificationsResponse>
 {
@@ -20,22 +21,14 @@ public class GetNotificationsQueryHandler : IQueryHandler<GetNotificationsQuery,
 
     public async Task<Result<GetNotificationsResponse>> Handle(GetNotificationsQuery query, CancellationToken ct)
     {
-        var notifications = await _notificationRepo.GetAllAsync(ct);
+        // Pagination and filtering happens at SQL level in repository
+        var (notifications, totalCount) = await _notificationRepo.GetPaginatedAsync(
+            query.Request.Page,
+            query.Request.PageSize,
+            query.Request.Status,
+            ct);
 
-        // Filter by status if specified
-        if (!string.IsNullOrEmpty(query.Request.Status))
-        {
-            notifications = notifications
-                .Where(n => n.Status.ToString().Equals(query.Request.Status, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-        }
-
-        var totalCount = notifications.Count;
-        
-        // Apply pagination
-        var pagedNotifications = notifications
-            .Skip((query.Request.Page - 1) * query.Request.PageSize)
-            .Take(query.Request.PageSize)
+        var notificationDtos = notifications
             .Select(n => new NotificationDto(
                 n.Id.Value,
                 n.Recipient,
@@ -48,7 +41,7 @@ public class GetNotificationsQueryHandler : IQueryHandler<GetNotificationsQuery,
             .ToList();
 
         return Result<GetNotificationsResponse>.Success(new GetNotificationsResponse(
-            pagedNotifications,
+            notificationDtos,
             totalCount,
             query.Request.Page,
             query.Request.PageSize

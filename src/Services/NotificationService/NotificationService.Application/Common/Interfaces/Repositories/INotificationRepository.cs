@@ -14,4 +14,13 @@ public interface INotificationRepository
     Task<IReadOnlyList<Notification>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Notification>> GetPendingNotificationsAsync(int batchSize = 100, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<Notification>> GetByRecipientAsync(string recipient, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Get paginated notifications with optional status filter - pagination happens at SQL level
+    /// </summary>
+    Task<(IReadOnlyList<Notification> Items, int TotalCount)> GetPaginatedAsync(
+        int page,
+        int pageSize,
+        string? status = null,
+        CancellationToken cancellationToken = default);
 }

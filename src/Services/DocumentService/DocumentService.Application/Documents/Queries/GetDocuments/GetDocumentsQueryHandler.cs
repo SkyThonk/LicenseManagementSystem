@@ -4,6 +4,10 @@ using DocumentService.Contracts.Documents.GetDocuments;
 
 namespace DocumentService.Application.Documents.Queries.GetDocuments;
 
+/// <summary>
+/// Handler for getting paginated documents list.
+/// Pagination and filtering happens at the SQL level for efficiency.
+/// </summary>
 public sealed class GetDocumentsQueryHandler
 {
     private readonly IDocumentRepository _documentRepository;
@@ -18,31 +22,14 @@ public sealed class GetDocumentsQueryHandler
         CancellationToken cancellationToken)
     {
         var request = query.Request;
-        IReadOnlyList<Domain.Documents.Document> documents;
-        int totalCount;
 
-        if (request.LicenseId.HasValue)
-        {
-            documents = await _documentRepository.GetByLicenseIdAsync(
-                request.LicenseId.Value,
-                cancellationToken);
-            totalCount = documents.Count;
-        }
-        else if (!string.IsNullOrEmpty(request.DocumentType))
-        {
-            documents = await _documentRepository.GetByDocumentTypeAsync(
-                request.DocumentType,
-                cancellationToken);
-            totalCount = documents.Count;
-        }
-        else
-        {
-            documents = await _documentRepository.GetAllAsync(
-                request.Page,
-                request.PageSize,
-                cancellationToken);
-            totalCount = await _documentRepository.GetTotalCountAsync(cancellationToken);
-        }
+        // All filtering and pagination happens at SQL level
+        var (documents, totalCount) = await _documentRepository.GetPaginatedAsync(
+            request.Page,
+            request.PageSize,
+            request.LicenseId,
+            request.DocumentType,
+            cancellationToken);
 
         var documentDtos = documents
             .Select(d => new DocumentDto(

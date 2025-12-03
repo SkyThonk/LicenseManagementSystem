@@ -1,12 +1,12 @@
 using Common.Application.Result;
 using PaymentService.Application.Common.Interfaces.Repositories;
 using PaymentService.Contracts.Payments.GetPayments;
-using PaymentService.Domain.Common.Enums;
 
 namespace PaymentService.Application.Payments.Queries.GetPayments;
 
 /// <summary>
-/// Handler for getting list of payments
+/// Handler for getting paginated list of payments.
+/// Pagination and filtering happens at the SQL level for efficiency.
 /// </summary>
 public class GetPaymentsQueryHandler
 {
@@ -22,37 +22,17 @@ public class GetPaymentsQueryHandler
         Guid tenantId,
         CancellationToken cancellationToken)
     {
-        IReadOnlyList<Domain.Payments.Payment> payments;
+        // All filtering and pagination happens at SQL level
+        var (payments, totalCount) = await _paymentRepository.GetPaginatedAsync(
+            tenantId,
+            request.Page,
+            request.PageSize,
+            request.LicenseId,
+            request.ApplicantId,
+            request.Status,
+            cancellationToken);
 
-        // Filter by license or applicant if specified
-        if (request.LicenseId.HasValue)
-        {
-            payments = await _paymentRepository.GetByLicenseIdAsync(request.LicenseId.Value, cancellationToken);
-            // Filter by tenant
-            payments = payments.Where(p => p.TenantId == tenantId).ToList();
-        }
-        else if (request.ApplicantId.HasValue)
-        {
-            payments = await _paymentRepository.GetByApplicantIdAsync(request.ApplicantId.Value, tenantId, cancellationToken);
-        }
-        else
-        {
-            payments = await _paymentRepository.GetByTenantIdAsync(tenantId, cancellationToken);
-        }
-
-        // Filter by status if specified
-        if (!string.IsNullOrWhiteSpace(request.Status) && 
-            Enum.TryParse<PaymentStatus>(request.Status, true, out var status))
-        {
-            payments = payments.Where(p => p.Status == status).ToList();
-        }
-
-        var totalCount = payments.Count;
-
-        // Apply pagination
-        var pagedPayments = payments
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
+        var paymentDtos = payments
             .Select(p => new PaymentDto(
                 PaymentId: p.Id.Value,
                 LicenseId: p.LicenseId,
@@ -66,7 +46,7 @@ public class GetPaymentsQueryHandler
             .ToList();
 
         return Result<GetPaymentsResponse>.Success(new GetPaymentsResponse(
-            Payments: pagedPayments,
+            Payments: paymentDtos,
             TotalCount: totalCount,
             Page: request.Page,
             PageSize: request.PageSize));

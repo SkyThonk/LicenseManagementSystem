@@ -61,22 +61,41 @@ public sealed class DocumentRepository : IDocumentRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Document>> GetAllAsync(int page, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsAsync(DocumentId id, CancellationToken cancellationToken = default)
     {
-        return await _context.Documents
+        return await _context.Documents.AnyAsync(d => d.Id == id, cancellationToken);
+    }
+
+    public async Task<(IReadOnlyList<Document> Items, int TotalCount)> GetPaginatedAsync(
+        int page,
+        int pageSize,
+        Guid? licenseId = null,
+        string? documentType = null,
+        CancellationToken cancellationToken = default)
+    {
+        IQueryable<Document> query = _context.Documents;
+
+        // Apply filters
+        if (licenseId.HasValue)
+        {
+            query = query.Where(d => d.LicenseId == licenseId.Value);
+        }
+
+        if (!string.IsNullOrEmpty(documentType))
+        {
+            query = query.Where(d => d.DocumentType == documentType);
+        }
+
+        // Get total count before pagination
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        // Apply ordering and pagination at SQL level
+        var items = await query
             .OrderByDescending(d => d.UploadedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
-    }
 
-    public async Task<int> GetTotalCountAsync(CancellationToken cancellationToken = default)
-    {
-        return await _context.Documents.CountAsync(cancellationToken);
-    }
-
-    public async Task<bool> ExistsAsync(DocumentId id, CancellationToken cancellationToken = default)
-    {
-        return await _context.Documents.AnyAsync(d => d.Id == id, cancellationToken);
+        return (items, totalCount);
     }
 }

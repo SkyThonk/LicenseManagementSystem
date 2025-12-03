@@ -7,9 +7,9 @@ namespace LicenseService.Contracts.Renewals.CreateRenewal;
 /// Each tenant has their own isolated database, so no TenantId is required.
 /// </summary>
 public record CreateRenewalRequest(
-    [Required]
+    [Required(ErrorMessage = "License ID is required")]
     Guid LicenseId,
 
-    [Required]
+    [Required(ErrorMessage = "Renewal date is required")]
     DateTime RenewalDate
 );
