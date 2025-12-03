@@ -7,30 +7,34 @@ using LicenseManagement.Web.Filters;
 namespace LicenseManagement.Web.Controllers;
 
 [RequireAuthentication]
+[Route("licenses")]
 public class LicensesController : Controller
 {
     private readonly ILicenseService _licenseService;
-    private readonly ITenantService _tenantService;
     private readonly ILogger<LicensesController> _logger;
 
     public LicensesController(
         ILicenseService licenseService,
-        ITenantService tenantService,
         ILogger<LicensesController> logger)
     {
         _licenseService = licenseService;
-        _tenantService = tenantService;
         _logger = logger;
     }
 
-    [HttpGet]
+    [HttpGet("")]
+    [HttpGet("index")]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, string? status = null)
     {
         var viewModel = await _licenseService.GetLicensesAsync(page, pageSize, search, status);
+        
+        // Get license types for the create dialog
+        var licenseTypes = await _licenseService.GetLicenseTypesAsync();
+        ViewBag.LicenseTypes = licenseTypes;
+        
         return View(viewModel);
     }
 
-    [HttpGet]
+    [HttpGet("details/{id:guid}")]
     public async Task<IActionResult> Details(Guid id)
     {
         var viewModel = await _licenseService.GetLicenseByIdAsync(id);
@@ -42,25 +46,32 @@ public class LicensesController : Controller
         return View(viewModel);
     }
 
-    [HttpGet]
+    [HttpGet("create")]
     public async Task<IActionResult> Create()
     {
+        var licenseTypes = await _licenseService.GetLicenseTypesAsync();
         var viewModel = new LicenseFormViewModel
         {
-            LicenseTypes = GetLicenseTypes(),
-            Tenants = await GetTenantsSelectListAsync()
+            LicenseTypes = licenseTypes.Select(lt => new SelectListItem
+            {
+                Value = lt.Id.ToString(),
+                Text = $"{lt.Name} (${lt.FeeAmount:F2})"
+            }).ToList()
         };
+        
+        // Add empty option at start
+        viewModel.LicenseTypes.Insert(0, new SelectListItem { Value = "", Text = "Select license type" });
+        
         return View(viewModel);
     }
 
-    [HttpPost]
+    [HttpPost("create")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(LicenseFormViewModel model)
     {
         if (!ModelState.IsValid)
         {
-            model.LicenseTypes = GetLicenseTypes();
-            model.Tenants = await GetTenantsSelectListAsync();
+            await PopulateLicenseTypesAsync(model);
             return View(model);
         }
 
@@ -72,12 +83,11 @@ public class LicensesController : Controller
         }
 
         TempData["Error"] = "Failed to create license. Please try again.";
-        model.LicenseTypes = GetLicenseTypes();
-        model.Tenants = await GetTenantsSelectListAsync();
+        await PopulateLicenseTypesAsync(model);
         return View(model);
     }
 
-    [HttpGet]
+    [HttpGet("edit/{id:guid}")]
     public async Task<IActionResult> Edit(Guid id)
     {
         var license = await _licenseService.GetLicenseByIdAsync(id);
@@ -87,30 +97,30 @@ public class LicensesController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        var licenseTypes = await _licenseService.GetLicenseTypesAsync();
         var viewModel = new LicenseFormViewModel
         {
             Id = license.Id,
-            LicenseType = license.LicenseType,
-            TenantId = license.TenantId,
-            ApplicantName = license.Applicant.FullName,
-            ApplicantEmail = license.Applicant.Email,
-            ApplicantPhone = license.Applicant.Phone,
-            ApplicantAddress = license.Applicant.Address,
-            LicenseTypes = GetLicenseTypes(),
-            Tenants = await GetTenantsSelectListAsync()
+            LicenseTypeId = Guid.TryParse(license.LicenseType, out var typeId) ? typeId : Guid.Empty,
+            LicenseTypes = licenseTypes.Select(lt => new SelectListItem
+            {
+                Value = lt.Id.ToString(),
+                Text = $"{lt.Name} (${lt.FeeAmount:F2})"
+            }).ToList()
         };
+        
+        viewModel.LicenseTypes.Insert(0, new SelectListItem { Value = "", Text = "Select license type" });
 
         return View(viewModel);
     }
 
-    [HttpPost]
+    [HttpPost("edit/{id:guid}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, LicenseFormViewModel model)
     {
         if (!ModelState.IsValid)
         {
-            model.LicenseTypes = GetLicenseTypes();
-            model.Tenants = await GetTenantsSelectListAsync();
+            await PopulateLicenseTypesAsync(model);
             return View(model);
         }
 
@@ -122,12 +132,11 @@ public class LicensesController : Controller
         }
 
         TempData["Error"] = "Failed to update license. Please try again.";
-        model.LicenseTypes = GetLicenseTypes();
-        model.Tenants = await GetTenantsSelectListAsync();
+        await PopulateLicenseTypesAsync(model);
         return View(model);
     }
 
-    [HttpPost]
+    [HttpPost("delete/{id:guid}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -143,7 +152,7 @@ public class LicensesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost]
+    [HttpPost("activate/{id:guid}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Activate(Guid id)
     {
@@ -159,7 +168,7 @@ public class LicensesController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
-    [HttpPost]
+    [HttpPost("deactivate/{id:guid}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Deactivate(Guid id)
     {
@@ -175,7 +184,7 @@ public class LicensesController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
-    [HttpPost]
+    [HttpPost("renew/{id:guid}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Renew(Guid id, DateTime expirationDate)
     {
@@ -191,28 +200,40 @@ public class LicensesController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
-    private List<SelectListItem> GetLicenseTypes()
+    // License Type endpoints
+    [HttpPost("types/create")]
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> CreateLicenseType([FromBody] CreateLicenseTypeViewModel model)
     {
-        return new List<SelectListItem>
+        if (!ModelState.IsValid)
         {
-            new SelectListItem { Value = "", Text = "Select license type" },
-            new SelectListItem { Value = "Enterprise", Text = "Enterprise" },
-            new SelectListItem { Value = "Professional", Text = "Professional" },
-            new SelectListItem { Value = "Basic", Text = "Basic" },
-            new SelectListItem { Value = "Trial", Text = "Trial" }
-        };
+            return BadRequest(new { success = false, message = "Invalid data" });
+        }
+
+        var result = await _licenseService.CreateLicenseTypeAsync(model);
+        if (result)
+        {
+            return Ok(new { success = true, message = "License type created successfully" });
+        }
+
+        return BadRequest(new { success = false, message = "Failed to create license type" });
     }
 
-    private async Task<List<SelectListItem>> GetTenantsSelectListAsync()
+    [HttpGet("types")]
+    public async Task<IActionResult> GetLicenseTypes()
     {
-        var tenants = await _tenantService.GetTenantsAsync(1, 100);
-        var items = tenants.Tenants.Items.Select(t => new SelectListItem
+        var licenseTypes = await _licenseService.GetLicenseTypesAsync();
+        return Ok(licenseTypes);
+    }
+
+    private async Task PopulateLicenseTypesAsync(LicenseFormViewModel model)
+    {
+        var licenseTypes = await _licenseService.GetLicenseTypesAsync();
+        model.LicenseTypes = licenseTypes.Select(lt => new SelectListItem
         {
-            Value = t.Id.ToString(),
-            Text = t.Name
+            Value = lt.Id.ToString(),
+            Text = $"{lt.Name} (${lt.FeeAmount:F2})"
         }).ToList();
-        
-        items.Insert(0, new SelectListItem { Value = "", Text = "Select tenant" });
-        return items;
+        model.LicenseTypes.Insert(0, new SelectListItem { Value = "", Text = "Select license type" });
     }
 }

@@ -17,12 +17,17 @@
     transition: var(--transition-slow);
 }
 
-.sidebar.collapsed ~ .main-wrapper .header {
+/* When sidebar is collapsed - using body class */
+body.sidebar-collapsed .header {
     left: var(--sidebar-collapsed-width);
 }
 
 @media (max-width: 1024px) {
     .header {
+        left: 0;
+    }
+    
+    body.sidebar-collapsed .header {
         left: 0;
     }
 }

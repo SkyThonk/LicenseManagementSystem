@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LicenseManagement.Web.Controllers;
 
+[Route("account")]
 public class AccountController : Controller
 {
     private readonly IAuthService _authService;
@@ -15,7 +16,9 @@ public class AccountController : Controller
         _logger = logger;
     }
 
-    [HttpGet]
+    [HttpGet("/")]
+    [HttpGet("")]
+    [HttpGet("login")]
     public IActionResult Login(string? returnUrl = null)
     {
         // If already authenticated, redirect to dashboard
@@ -31,7 +34,7 @@ public class AccountController : Controller
         return View(model);
     }
 
-    [HttpPost]
+    [HttpPost("login")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginViewModel model)
     {
@@ -57,7 +60,7 @@ public class AccountController : Controller
         return View(model);
     }
 
-    [HttpPost]
+    [HttpPost("logout")]
     [ValidateAntiForgeryToken]
     public IActionResult Logout()
     {
@@ -67,7 +70,7 @@ public class AccountController : Controller
         return RedirectToAction(nameof(Login));
     }
 
-    [HttpGet]
+    [HttpGet("profile")]
     public IActionResult Profile()
     {
         var user = _authService.GetCurrentUser();
@@ -80,7 +83,7 @@ public class AccountController : Controller
         return View();
     }
 
-    [HttpGet]
+    [HttpGet("settings")]
     public IActionResult Settings()
     {
         if (!_authService.IsAuthenticated())
@@ -90,7 +93,7 @@ public class AccountController : Controller
         return View();
     }
 
-    [HttpGet]
+    [HttpGet("access-denied")]
     public IActionResult AccessDenied()
     {
         return View();

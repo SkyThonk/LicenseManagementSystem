@@ -14,34 +14,37 @@ public class LicenseFormViewModel : BaseViewModel
 
     [Required(ErrorMessage = "License type is required")]
     [Display(Name = "License Type")]
-    public string LicenseType { get; set; } = string.Empty;
+    public Guid LicenseTypeId { get; set; }
 
-    [Display(Name = "Tenant")]
-    public Guid? TenantId { get; set; }
-
-    // Applicant Information
-    [Required(ErrorMessage = "Applicant name is required")]
-    [StringLength(200, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 200 characters")]
-    [Display(Name = "Applicant Name")]
-    public string ApplicantName { get; set; } = string.Empty;
-
-    [Required(ErrorMessage = "Email is required")]
-    [EmailAddress(ErrorMessage = "Invalid email address")]
-    [Display(Name = "Email")]
-    public string ApplicantEmail { get; set; } = string.Empty;
-
-    [Phone(ErrorMessage = "Invalid phone number")]
-    [Display(Name = "Phone")]
-    public string? ApplicantPhone { get; set; }
-
-    [Display(Name = "Address")]
-    public string? ApplicantAddress { get; set; }
-
-    [Display(Name = "Notes")]
-    [StringLength(2000, ErrorMessage = "Notes cannot exceed 2000 characters")]
-    public string? Notes { get; set; }
-
-    // Select list options
+    // Select list options - populated from API
     public List<SelectListItem> LicenseTypes { get; set; } = [];
-    public List<SelectListItem> Tenants { get; set; } = [];
+}
+
+/// <summary>
+/// License type view model
+/// </summary>
+public class LicenseTypeViewModel
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public decimal FeeAmount { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+/// <summary>
+/// Create license type view model
+/// </summary>
+public class CreateLicenseTypeViewModel
+{
+    [Required(ErrorMessage = "Name is required")]
+    [StringLength(200, ErrorMessage = "Name cannot exceed 200 characters")]
+    public string Name { get; set; } = string.Empty;
+
+    [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
+    public string? Description { get; set; }
+
+    [Required(ErrorMessage = "Fee amount is required")]
+    [Range(0, double.MaxValue, ErrorMessage = "Fee must be a positive number")]
+    public decimal FeeAmount { get; set; }
 }

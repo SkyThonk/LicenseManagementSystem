@@ -12,4 +12,8 @@ public interface ILicenseService
     Task<bool> ActivateLicenseAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> DeactivateLicenseAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> RenewLicenseAsync(Guid id, DateTime newExpirationDate, CancellationToken cancellationToken = default);
+    
+    // License Type operations
+    Task<List<LicenseTypeViewModel>> GetLicenseTypesAsync(CancellationToken cancellationToken = default);
+    Task<bool> CreateLicenseTypeAsync(CreateLicenseTypeViewModel model, CancellationToken cancellationToken = default);
 }

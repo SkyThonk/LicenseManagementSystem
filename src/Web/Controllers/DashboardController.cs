@@ -5,6 +5,7 @@ using LicenseManagement.Web.Filters;
 namespace LicenseManagement.Web.Controllers;
 
 [RequireAuthentication]
+[Route("dashboard")]
 public class DashboardController : Controller
 {
     private readonly IDashboardService _dashboardService;
@@ -21,6 +22,8 @@ public class DashboardController : Controller
         _logger = logger;
     }
 
+    [HttpGet("")]
+    [HttpGet("index")]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
         ViewData["Title"] = "Dashboard";

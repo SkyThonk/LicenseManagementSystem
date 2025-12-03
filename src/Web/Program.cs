@@ -28,10 +28,38 @@ builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
-// Register HTTP client for API calls
+// Register HTTP client for TenantService API calls (port 5002)
 builder.Services.AddHttpClient<IApiService, ApiService>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["ApiBaseUrl"] ?? "https://localhost:5001");
+    client.BaseAddress = new Uri(builder.Configuration["TenantServiceUrl"] ?? "http://localhost:5002");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
+// Register HTTP client for LicenseService API calls (port 5003)
+builder.Services.AddHttpClient<ILicenseApiService, LicenseApiService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["LicenseServiceUrl"] ?? "http://localhost:5003");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
+// Register HTTP client for DocumentService API calls (port 5004)
+builder.Services.AddHttpClient<IDocumentApiService, DocumentApiService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["DocumentServiceUrl"] ?? "http://localhost:5004");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
+// Register HTTP client for NotificationService API calls (port 5005)
+builder.Services.AddHttpClient<INotificationApiService, NotificationApiService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["NotificationServiceUrl"] ?? "http://localhost:5005");
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
+// Register HTTP client for PaymentService API calls (port 5006)
+builder.Services.AddHttpClient<IPaymentApiService, PaymentApiService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["PaymentServiceUrl"] ?? "http://localhost:5006");
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 

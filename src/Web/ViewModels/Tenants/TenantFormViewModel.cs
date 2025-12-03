@@ -16,24 +16,61 @@ public class TenantFormViewModel : BaseViewModel
     [Display(Name = "Organization Name")]
     public string Name { get; set; } = string.Empty;
 
+    [Required(ErrorMessage = "Agency code is required")]
+    [StringLength(50, ErrorMessage = "Agency code cannot exceed 50 characters")]
+    [Display(Name = "Agency Code")]
+    public string AgencyCode { get; set; } = string.Empty;
+
+    [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
+    [Display(Name = "Description")]
+    public string? Description { get; set; }
+
     [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Invalid email address")]
+    [StringLength(255, ErrorMessage = "Email cannot exceed 255 characters")]
     [Display(Name = "Email Address")]
     public string Email { get; set; } = string.Empty;
 
-    [Phone(ErrorMessage = "Invalid phone number")]
-    [Display(Name = "Phone Number")]
-    public string? Phone { get; set; }
+    [Required(ErrorMessage = "Address is required")]
+    [StringLength(255, ErrorMessage = "Address cannot exceed 255 characters")]
+    [Display(Name = "Address Line")]
+    public string AddressLine { get; set; } = string.Empty;
 
-    [StringLength(500, ErrorMessage = "Address cannot exceed 500 characters")]
-    [Display(Name = "Street Address")]
-    public string? Address { get; set; }
-
+    [Required(ErrorMessage = "City is required")]
     [StringLength(100, ErrorMessage = "City cannot exceed 100 characters")]
     [Display(Name = "City")]
-    public string? City { get; set; }
+    public string City { get; set; } = string.Empty;
 
-    [StringLength(100, ErrorMessage = "Country cannot exceed 100 characters")]
-    [Display(Name = "Country")]
-    public string? Country { get; set; }
+    [Required(ErrorMessage = "State is required")]
+    [StringLength(100, ErrorMessage = "State cannot exceed 100 characters")]
+    [Display(Name = "State")]
+    public string State { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Postal code is required")]
+    [StringLength(20, ErrorMessage = "Postal code cannot exceed 20 characters")]
+    [Display(Name = "Postal Code")]
+    public string PostalCode { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Country code is required")]
+    [StringLength(5, ErrorMessage = "Country code cannot exceed 5 characters")]
+    [Display(Name = "Country Code")]
+    public string CountryCode { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Phone number is required")]
+    [StringLength(15, ErrorMessage = "Phone number cannot exceed 15 characters")]
+    [Display(Name = "Phone Number")]
+    public string PhoneNumber { get; set; } = string.Empty;
+
+    // Admin user fields for registration
+    [Display(Name = "Admin First Name")]
+    public string? FirstName { get; set; }
+
+    [Display(Name = "Admin Last Name")]
+    public string? LastName { get; set; }
+
+    [Display(Name = "Admin Password")]
+    public string? Password { get; set; }
+
+    [Display(Name = "Logo URL")]
+    public string? Logo { get; set; }
 }

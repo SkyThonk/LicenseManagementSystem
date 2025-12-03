@@ -7,6 +7,7 @@ using LicenseManagement.Web.Filters;
 namespace LicenseManagement.Web.Controllers;
 
 [RequireAuthentication]
+[Route("documents")]
 public class DocumentsController : Controller
 {
     private readonly IDocumentService _documentService;
@@ -23,14 +24,15 @@ public class DocumentsController : Controller
         _logger = logger;
     }
 
-    [HttpGet]
+    [HttpGet("")]
+    [HttpGet("index")]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null)
     {
         var viewModel = await _documentService.GetDocumentsAsync(page, pageSize, search);
         return View(viewModel);
     }
 
-    [HttpGet]
+    [HttpGet("upload")]
     public async Task<IActionResult> Upload()
     {
         var viewModel = new DocumentUploadViewModel
@@ -41,7 +43,7 @@ public class DocumentsController : Controller
         return View(viewModel);
     }
 
-    [HttpPost]
+    [HttpPost("upload")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Upload(DocumentUploadViewModel model)
     {
@@ -65,7 +67,7 @@ public class DocumentsController : Controller
         return View(model);
     }
 
-    [HttpPost]
+    [HttpPost("delete/{id:guid}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -81,7 +83,7 @@ public class DocumentsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpGet]
+    [HttpGet("download/{id:guid}")]
     public async Task<IActionResult> Download(Guid id)
     {
         var url = await _documentService.GetDownloadUrlAsync(id);

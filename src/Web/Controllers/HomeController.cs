@@ -4,6 +4,7 @@ using LicenseManagement.Web.Models;
 
 namespace LicenseManagement.Web.Controllers;
 
+[Route("home")]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
@@ -13,16 +14,20 @@ public class HomeController : Controller
         _logger = logger;
     }
 
+    [HttpGet("")]
+    [HttpGet("index")]
     public IActionResult Index()
     {
         return View();
     }
 
+    [HttpGet("privacy")]
     public IActionResult Privacy()
     {
         return View();
     }
 
+    [HttpGet("error")]
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

@@ -30,82 +30,23 @@
                     <h3 class="card-title">License Details</h3>
                 </div>
                 <div class="card-body">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label asp-for="LicenseType" class="form-label">
-                                License Type <span class="required">*</span>
-                            </label>
-                            <select asp-for="LicenseType" asp-items="Model.LicenseTypes" class="form-select"></select>
-                            <span asp-validation-for="LicenseType" class="form-error"></span>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="TenantId" class="form-label">
-                                Tenant
-                            </label>
-                            <select asp-for="TenantId" asp-items="Model.Tenants" class="form-select"></select>
-                            <span asp-validation-for="TenantId" class="form-error"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Applicant Information -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3 class="card-title">Applicant Information</h3>
-                </div>
-                <div class="card-body">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label asp-for="ApplicantName" class="form-label">
-                                Full Name <span class="required">*</span>
-                            </label>
-                            <input asp-for="ApplicantName" class="form-control" placeholder="Enter applicant's full name" />
-                            <span asp-validation-for="ApplicantName" class="form-error"></span>
-                        </div>
-                        <div class="form-group">
-                            <label asp-for="ApplicantEmail" class="form-label">
-                                Email <span class="required">*</span>
-                            </label>
-                            <input asp-for="ApplicantEmail" type="email" class="form-control" placeholder="Enter email address" />
-                            <span asp-validation-for="ApplicantEmail" class="form-error"></span>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label asp-for="ApplicantPhone" class="form-label">
-                                Phone
-                                <span class="form-label-optional">(optional)</span>
-                            </label>
-                            <input asp-for="ApplicantPhone" type="tel" class="form-control" placeholder="+1 (555) 000-0000" />
-                            <span asp-validation-for="ApplicantPhone" class="form-error"></span>
-                        </div>
-                    </div>
                     <div class="form-group">
-                        <label asp-for="ApplicantAddress" class="form-label">
-                            Address
-                            <span class="form-label-optional">(optional)</span>
+                        <label asp-for="LicenseTypeId" class="form-label">
+                            License Type <span class="required">*</span>
                         </label>
-                        <textarea asp-for="ApplicantAddress" class="form-control" rows="3" placeholder="Enter full address"></textarea>
-                        <span asp-validation-for="ApplicantAddress" class="form-error"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notes -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h3 class="card-title">Additional Notes</h3>
-                </div>
-                <div class="card-body">
-                    <div class="form-group">
-                        <label asp-for="Notes" class="form-label">
-                            Notes
-                            <span class="form-label-optional">(optional)</span>
-                        </label>
-                        <textarea asp-for="Notes" class="form-control" rows="4" placeholder="Add any additional notes or comments..."></textarea>
-                        <span class="form-hint">Maximum 2000 characters</span>
-                        <span asp-validation-for="Notes" class="form-error"></span>
+                        <div class="input-group">
+                            <select asp-for="LicenseTypeId" class="form-select" id="licenseTypeSelect">
+                                @foreach (var item in Model.LicenseTypes)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                            <button type="button" class="btn btn-secondary" onclick="openCreateLicenseTypeModal()">
+                                <i class="fas fa-plus"></i> New Type
+                            </button>
+                        </div>
+                        <span asp-validation-for="LicenseTypeId" class="form-error"></span>
+                        <span class="form-hint">Select the license type for this application or create a new one.</span>
                     </div>
                 </div>
             </div>
@@ -125,26 +66,62 @@
     <div class="col-lg-4">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Help</h3>
+                <h3 class="card-title">Information</h3>
             </div>
             <div class="card-body">
                 <div class="help-section">
-                    <h4><i class="fas fa-info-circle"></i> License Types</h4>
-                    <ul>
-                        <li><strong>Enterprise:</strong> Full features, unlimited users</li>
-                        <li><strong>Professional:</strong> Advanced features, up to 50 users</li>
-                        <li><strong>Basic:</strong> Core features, up to 10 users</li>
-                        <li><strong>Trial:</strong> 30-day trial with all features</li>
-                    </ul>
+                    <h4><i class="fas fa-info-circle"></i> How it works</h4>
+                    <p>Select a license type from the dropdown to create a new license application. The applicant will be automatically set to your account.</p>
                 </div>
                 <div class="help-section">
                     <h4><i class="fas fa-lightbulb"></i> Tips</h4>
                     <ul>
-                        <li>Use a valid email for license delivery</li>
-                        <li>Phone number helps with verification</li>
-                        <li>Complete address required for Enterprise</li>
+                        <li>If no license types exist, create one first</li>
+                        <li>Each license type has a different fee</li>
+                        <li>License will be in "Pending" status initially</li>
                     </ul>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create License Type Modal -->
+<div id="createLicenseTypeModal" class="license-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;">
+    <div class="license-modal-backdrop" onclick="closeCreateLicenseTypeModal()" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5);"></div>
+    <div class="license-modal-dialog" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 500px; z-index: 10000;">
+        <div class="license-modal-content" style="background: white; border-radius: 0.5rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+            <div class="license-modal-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid #e5e7eb;">
+                <h3 style="font-size: 1.125rem; font-weight: 600; margin: 0;">Create License Type</h3>
+                <button type="button" onclick="closeCreateLicenseTypeModal()" style="background: none; border: none; font-size: 1.25rem; color: #6b7280; cursor: pointer; padding: 0.25rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="license-modal-body" style="padding: 1.5rem;">
+                <form id="createLicenseTypeForm">
+                    <div class="form-group">
+                        <label class="form-label">Name <span class="required">*</span></label>
+                        <input type="text" id="licenseTypeName" class="form-control" placeholder="e.g., Enterprise, Professional, Basic" required maxlength="200" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea id="licenseTypeDescription" class="form-control" rows="3" placeholder="Describe this license type..." maxlength="500"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Fee Amount <span class="required">*</span></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" id="licenseTypeFee" class="form-control" placeholder="0.00" required min="0" step="0.01" />
+                        </div>
+                    </div>
+                </form>
+                <div id="licenseTypeError" class="alert alert-danger" style="display: none;"></div>
+            </div>
+            <div class="license-modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.5rem; border-top: 1px solid #e5e7eb;">
+                <button type="button" class="btn btn-secondary" onclick="closeCreateLicenseTypeModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="createLicenseType()" id="createLicenseTypeBtn">
+                    <i class="fas fa-plus"></i> Create
+                </button>
             </div>
         </div>
     </div>
@@ -167,6 +144,26 @@
         
         .mb-4 { margin-bottom: 1rem; }
         
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .input-group .form-select,
+        .input-group .form-control {
+            flex: 1;
+        }
+        
+        .input-group-text {
+            display: flex;
+            align-items: center;
+            padding: 0 0.75rem;
+            background: var(--gray-100);
+            border: 1px solid var(--gray-300);
+            border-radius: 0.375rem;
+            font-weight: 500;
+        }
+        
         .help-section {
             margin-bottom: 1.5rem;
         }
@@ -184,6 +181,12 @@
             gap: 0.5rem;
         }
         
+        .help-section p {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+        
         .help-section ul {
             margin: 0;
             padding-left: 1.5rem;
@@ -194,5 +197,128 @@
         .help-section li {
             margin-bottom: 0.25rem;
         }
+        
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 0.375rem;
+            margin-top: 1rem;
+        }
+        
+        .alert-danger {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
     </style>
+}
+
+@section Scripts {
+    <script>
+        function openCreateLicenseTypeModal() {
+            document.getElementById('createLicenseTypeModal').style.display = 'block';
+            document.getElementById('licenseTypeName').focus();
+        }
+        
+        function closeCreateLicenseTypeModal() {
+            document.getElementById('createLicenseTypeModal').style.display = 'none';
+            document.getElementById('createLicenseTypeForm').reset();
+            document.getElementById('licenseTypeError').style.display = 'none';
+        }
+        
+        async function createLicenseType() {
+            const name = document.getElementById('licenseTypeName').value.trim();
+            const description = document.getElementById('licenseTypeDescription').value.trim();
+            const feeAmount = parseFloat(document.getElementById('licenseTypeFee').value) || 0;
+            const errorDiv = document.getElementById('licenseTypeError');
+            const createBtn = document.getElementById('createLicenseTypeBtn');
+            
+            if (!name) {
+                errorDiv.textContent = 'Name is required';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (feeAmount < 0) {
+                errorDiv.textContent = 'Fee must be a positive number';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            createBtn.disabled = true;
+            createBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+            
+            try {
+                const response = await fetch('/licenses/types/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        description: description || null,
+                        feeAmount: feeAmount
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    closeCreateLicenseTypeModal();
+                    // Refresh the license types dropdown
+                    await refreshLicenseTypes();
+                    // Show success message
+                    alert('License type created successfully!');
+                } else {
+                    errorDiv.textContent = result.message || 'Failed to create license type';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.style.display = 'block';
+            } finally {
+                createBtn.disabled = false;
+                createBtn.innerHTML = '<i class="fas fa-plus"></i> Create';
+            }
+        }
+        
+        async function refreshLicenseTypes() {
+            try {
+                const response = await fetch('/licenses/types');
+                const licenseTypes = await response.json();
+                
+                const select = document.getElementById('licenseTypeSelect');
+                const currentValue = select.value;
+                
+                // Clear and rebuild options
+                select.innerHTML = '<option value="">Select license type</option>';
+                
+                licenseTypes.forEach(lt => {
+                    const option = document.createElement('option');
+                    option.value = lt.id;
+                    option.textContent = `${lt.name} ($${lt.feeAmount.toFixed(2)})`;
+                    select.appendChild(option);
+                });
+                
+                // Restore selection if still exists, or select the last added one
+                if (licenseTypes.length > 0) {
+                    if (currentValue && select.querySelector(`option[value="${currentValue}"]`)) {
+                        select.value = currentValue;
+                    } else {
+                        // Select the last one (newly created)
+                        select.value = licenseTypes[licenseTypes.length - 1].id;
+                    }
+                }
+            } catch (error) {
+                console.error('Error refreshing license types:', error);
+            }
+        }
+        
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeCreateLicenseTypeModal();
+            }
+        });
+    </script>
 }

@@ -113,15 +113,26 @@ a:hover {
     min-height: 100vh;
 }
 
-.main-content {
+/* Main Wrapper - Contains header and content */
+.main-wrapper {
     flex: 1;
     margin-left: var(--sidebar-width);
     min-height: 100vh;
     transition: var(--transition-slow);
+    display: flex;
+    flex-direction: column;
 }
 
-.main-content.sidebar-collapsed {
+/* When sidebar is collapsed - using body class */
+body.sidebar-collapsed .main-wrapper {
     margin-left: var(--sidebar-collapsed-width);
+}
+
+.main-content {
+    flex: 1;
+    padding: 1.5rem;
+    padding-top: calc(var(--header-height) + 1.5rem);
+    transition: var(--transition-slow);
 }
 
 .page-content {
@@ -130,7 +141,11 @@ a:hover {
 }
 
 @media (max-width: 1024px) {
-    .main-content {
+    .main-wrapper {
+        margin-left: 0;
+    }
+    
+    body.sidebar-collapsed .main-wrapper {
         margin-left: 0;
     }
 }

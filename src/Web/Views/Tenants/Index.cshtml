@@ -45,8 +45,8 @@
             <thead>
                 <tr>
                     <th class="sortable">Tenant</th>
+                    <th class="sortable">Agency Code</th>
                     <th class="sortable">Email</th>
-                    <th class="sortable">Licenses</th>
                     <th>Status</th>
                     <th class="sortable">Created</th>
                     <th>Actions</th>
@@ -62,16 +62,16 @@
                                 <div class="table-cell-user">
                                     <div class="table-cell-avatar">@tenant.Name[0]</div>
                                     <div>
-                                        <a href="/tenants/@tenant.Id" class="table-cell-name">@tenant.Name</a>
+                                        <a href="/tenants/details/@tenant.Id" class="table-cell-name">@tenant.Name</a>
                                     </div>
                                 </div>
                             </td>
+                            <td>
+                                <span class="badge badge-outline">@tenant.AgencyCode</span>
+                            </td>
                             <td>@tenant.Email</td>
                             <td>
-                                <span class="badge badge-outline">@tenant.LicenseCount licenses</span>
-                            </td>
-                            <td>
-                                <span class="badge badge-@(tenant.Status == "Active" ? "success" : "danger")">
+                                <span class="badge badge-@(tenant.IsActive ? "success" : "danger")">
                                     @tenant.Status
                                 </span>
                             </td>
@@ -80,7 +80,7 @@
                             </td>
                             <td>
                                 <div class="table-actions">
-                                    <a href="/tenants/@tenant.Id" class="table-action-btn view" title="View">
+                                    <a href="/tenants/details/@tenant.Id" class="table-action-btn view" title="View">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     <a href="/tenants/edit/@tenant.Id" class="table-action-btn edit" title="Edit">
@@ -91,7 +91,7 @@
                                             <i class="fas fa-ellipsis-v"></i>
                                         </button>
                                         <div class="table-actions-dropdown-menu">
-                                            @if (tenant.Status == "Active")
+                                            @if (tenant.IsActive)
                                             {
                                                 <form method="post" asp-action="Deactivate" asp-route-id="@tenant.Id">
                                                     @Html.AntiForgeryToken()
@@ -111,15 +111,6 @@
                                                     </button>
                                                 </form>
                                             }
-                                            <div class="table-actions-dropdown-divider"></div>
-                                            <form method="post" asp-action="Delete" asp-route-id="@tenant.Id" 
-                                                  onsubmit="return confirm('Are you sure you want to delete this tenant?');">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit" class="table-actions-dropdown-item danger">
-                                                    <i class="fas fa-trash"></i>
-                                                    <span>Delete</span>
-                                                </button>
-                                            </form>
                                         </div>
                                     </div>
                                 </div>

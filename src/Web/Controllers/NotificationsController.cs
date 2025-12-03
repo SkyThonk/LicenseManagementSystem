@@ -5,6 +5,7 @@ using LicenseManagement.Web.Filters;
 namespace LicenseManagement.Web.Controllers;
 
 [RequireAuthentication]
+[Route("notifications")]
 public class NotificationsController : Controller
 {
     private readonly INotificationService _notificationService;
@@ -18,14 +19,15 @@ public class NotificationsController : Controller
         _logger = logger;
     }
 
-    [HttpGet]
+    [HttpGet("")]
+    [HttpGet("index")]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10, bool? unreadOnly = null)
     {
         var viewModel = await _notificationService.GetNotificationsAsync(page, pageSize, unreadOnly);
         return View(viewModel);
     }
 
-    [HttpPost]
+    [HttpPost("mark-as-read/{id:guid}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> MarkAsRead(Guid id)
     {
@@ -41,7 +43,7 @@ public class NotificationsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost]
+    [HttpPost("mark-all-as-read")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> MarkAllAsRead()
     {
@@ -57,7 +59,7 @@ public class NotificationsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost]
+    [HttpPost("delete/{id:guid}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id)
     {
@@ -73,7 +75,7 @@ public class NotificationsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpGet]
+    [HttpGet("unread-count")]
     public async Task<IActionResult> GetUnreadCount()
     {
         var count = await _notificationService.GetUnreadCountAsync();

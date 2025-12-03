@@ -11,7 +11,7 @@
             <i class="fas fa-arrow-left"></i> Back
         </a>
         <h1 class="page-title">@ViewData["Title"]</h1>
-        <p class="page-subtitle">@(isEdit ? "Update tenant information" : "Add a new tenant organization")</p>
+        <p class="page-subtitle">@(isEdit ? "Update tenant information" : "Register a new government agency")</p>
     </div>
 </div>
 
@@ -23,19 +23,48 @@
             <!-- Basic Information -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3 class="card-title">Basic Information</h3>
+                    <h3 class="card-title">Agency Information</h3>
                 </div>
                 <div class="card-body">
+                    <div class="form-row form-row-2">
+                        <div class="form-group">
+                            <label class="form-label form-label-required" for="Name">Organization Name</label>
+                            <input type="text" 
+                                   id="Name" 
+                                   name="Name" 
+                                   value="@Model.Name" 
+                                   class="form-control @(ViewData.ModelState["Name"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                   placeholder="Enter organization name"
+                                   required />
+                            <span asp-validation-for="Name" class="invalid-feedback"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label @(!isEdit ? "form-label-required" : "")" for="AgencyCode">Agency Code</label>
+                            <input type="text" 
+                                   id="AgencyCode" 
+                                   name="AgencyCode" 
+                                   value="@Model.AgencyCode" 
+                                   class="form-control @(ViewData.ModelState["AgencyCode"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                   placeholder="Enter agency code (e.g., DOT, EPA)"
+                                   @(isEdit ? "readonly" : "required") />
+                            <span asp-validation-for="AgencyCode" class="invalid-feedback"></span>
+                            @if (isEdit)
+                            {
+                                <span class="form-text">Agency code cannot be changed after creation</span>
+                            }
+                        </div>
+                    </div>
+
                     <div class="form-group">
-                        <label class="form-label form-label-required" for="Name">Organization Name</label>
-                        <input type="text" 
-                               id="Name" 
-                               name="Name" 
-                               value="@Model.Name" 
-                               class="form-control @(ViewData.ModelState["Name"]?.Errors.Any() == true ? "is-invalid" : "")" 
-                               placeholder="Enter organization name"
-                               required />
-                        <span asp-validation-for="Name" class="invalid-feedback"></span>
+                        <label class="form-label" for="Description">
+                            Description
+                            <span class="form-label-optional">(optional)</span>
+                        </label>
+                        <textarea id="Description" 
+                                  name="Description" 
+                                  class="form-control" 
+                                  rows="3"
+                                  placeholder="Enter a brief description of the agency">@Model.Description</textarea>
                     </div>
 
                     <div class="form-row form-row-2">
@@ -51,16 +80,16 @@
                             <span asp-validation-for="Email" class="invalid-feedback"></span>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="Phone">
-                                Phone Number
+                            <label class="form-label" for="Logo">
+                                Logo URL
                                 <span class="form-label-optional">(optional)</span>
                             </label>
-                            <input type="tel" 
-                                   id="Phone" 
-                                   name="Phone" 
-                                   value="@Model.Phone" 
+                            <input type="url" 
+                                   id="Logo" 
+                                   name="Logo" 
+                                   value="@Model.Logo" 
                                    class="form-control" 
-                                   placeholder="Enter phone number" />
+                                   placeholder="https://example.com/logo.png" />
                         </div>
                     </div>
                 </div>
@@ -73,64 +102,146 @@
                 </div>
                 <div class="card-body">
                     <div class="form-group">
-                        <label class="form-label" for="Address">
-                            Street Address
-                            <span class="form-label-optional">(optional)</span>
-                        </label>
+                        <label class="form-label form-label-required" for="AddressLine">Address Line</label>
                         <input type="text" 
-                               id="Address" 
-                               name="Address" 
-                               value="@Model.Address" 
-                               class="form-control" 
-                               placeholder="Enter street address" />
+                               id="AddressLine" 
+                               name="AddressLine" 
+                               value="@Model.AddressLine" 
+                               class="form-control @(ViewData.ModelState["AddressLine"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                               placeholder="Enter street address"
+                               required />
+                        <span asp-validation-for="AddressLine" class="invalid-feedback"></span>
                     </div>
 
                     <div class="form-row form-row-2">
                         <div class="form-group">
-                            <label class="form-label" for="City">
-                                City
-                                <span class="form-label-optional">(optional)</span>
-                            </label>
+                            <label class="form-label form-label-required" for="City">City</label>
                             <input type="text" 
                                    id="City" 
                                    name="City" 
                                    value="@Model.City" 
-                                   class="form-control" 
-                                   placeholder="Enter city" />
+                                   class="form-control @(ViewData.ModelState["City"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                   placeholder="Enter city"
+                                   required />
+                            <span asp-validation-for="City" class="invalid-feedback"></span>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="Country">
-                                Country
-                                <span class="form-label-optional">(optional)</span>
-                            </label>
-                            <select id="Country" name="Country" class="form-select">
-                                <option value="">Select country</option>
-                                @{
-                                    var countries = new[] { "United States", "Canada", "United Kingdom", "Germany", "France", "Australia", "Japan", "Other" };
-                                }
-                                @foreach (var country in countries)
-                                {
-                                    if (Model.Country == country)
-                                    {
-                                        <option value="@country" selected>@country</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@country">@country</option>
-                                    }
-                                }
-                            </select>
+                            <label class="form-label form-label-required" for="State">State</label>
+                            <input type="text" 
+                                   id="State" 
+                                   name="State" 
+                                   value="@Model.State" 
+                                   class="form-control @(ViewData.ModelState["State"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                   placeholder="Enter state"
+                                   required />
+                            <span asp-validation-for="State" class="invalid-feedback"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row form-row-2">
+                        <div class="form-group">
+                            <label class="form-label form-label-required" for="PostalCode">Postal Code</label>
+                            <input type="text" 
+                                   id="PostalCode" 
+                                   name="PostalCode" 
+                                   value="@Model.PostalCode" 
+                                   class="form-control @(ViewData.ModelState["PostalCode"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                   placeholder="Enter postal code"
+                                   required />
+                            <span asp-validation-for="PostalCode" class="invalid-feedback"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label form-label-required" for="CountryCode">Country Code</label>
+                            <input type="text" 
+                                   id="CountryCode" 
+                                   name="CountryCode" 
+                                   value="@Model.CountryCode" 
+                                   class="form-control @(ViewData.ModelState["CountryCode"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                   placeholder="e.g., +01, +44, +91"
+                                   maxlength="5"
+                                   required />
+                            <span asp-validation-for="CountryCode" class="invalid-feedback"></span>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Phone Information -->
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3 class="card-title">Contact Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label form-label-required" for="PhoneNumber">Phone Number</label>
+                        <input type="tel" 
+                               id="PhoneNumber" 
+                               name="PhoneNumber" 
+                               value="@Model.PhoneNumber" 
+                               class="form-control @(ViewData.ModelState["PhoneNumber"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                               placeholder="Enter phone number (numbers only)"
+                               required />
+                        <span asp-validation-for="PhoneNumber" class="invalid-feedback"></span>
+                        <span class="form-text">Enter the phone number without country code</span>
+                    </div>
+                </div>
+            </div>
+
+            @if (!isEdit)
+            {
+                <!-- Admin User Information -->
+                <div class="card mb-6">
+                    <div class="card-header">
+                        <h3 class="card-title">Admin User Account</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-row form-row-2">
+                            <div class="form-group">
+                                <label class="form-label form-label-required" for="FirstName">First Name</label>
+                                <input type="text" 
+                                       id="FirstName" 
+                                       name="FirstName" 
+                                       value="@Model.FirstName" 
+                                       class="form-control @(ViewData.ModelState["FirstName"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                       placeholder="Enter first name"
+                                       required />
+                                <span asp-validation-for="FirstName" class="invalid-feedback"></span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label form-label-required" for="LastName">Last Name</label>
+                                <input type="text" 
+                                       id="LastName" 
+                                       name="LastName" 
+                                       value="@Model.LastName" 
+                                       class="form-control @(ViewData.ModelState["LastName"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                       placeholder="Enter last name"
+                                       required />
+                                <span asp-validation-for="LastName" class="invalid-feedback"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label form-label-required" for="Password">Password</label>
+                            <input type="password" 
+                                   id="Password" 
+                                   name="Password" 
+                                   class="form-control @(ViewData.ModelState["Password"]?.Errors.Any() == true ? "is-invalid" : "")" 
+                                   placeholder="Enter password (min 6 characters)"
+                                   minlength="6"
+                                   required />
+                            <span asp-validation-for="Password" class="invalid-feedback"></span>
+                            <span class="form-text">Password must be at least 6 characters</span>
+                        </div>
+                    </div>
+                </div>
+            }
 
             <!-- Form Actions -->
             <div class="form-actions form-actions-right">
                 <a href="@(isEdit ? $"/tenants/{Model.Id}" : "/tenants")" class="btn btn-secondary">Cancel</a>
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-save"></i>
-                    @(isEdit ? "Update Tenant" : "Create Tenant")
+                    @(isEdit ? "Update Tenant" : "Register Tenant")
                 </button>
             </div>
         </form>
@@ -145,16 +256,19 @@
             <div class="card-body">
                 <div class="help-section">
                     <h4><i class="fas fa-info-circle"></i> About Tenants</h4>
-                    <p>Tenants represent organizations or companies that use your license management system.</p>
+                    <p>Tenants represent government agencies that use the license management system.</p>
                 </div>
                 <div class="help-section">
-                    <h4><i class="fas fa-lightbulb"></i> Tips</h4>
-                    <ul>
-                        <li>Use a valid email address for communication</li>
-                        <li>Complete address helps with billing and support</li>
-                        <li>Tenant names should be unique</li>
-                    </ul>
+                    <h4><i class="fas fa-building"></i> Agency Code</h4>
+                    <p>The agency code is a unique identifier for the organization (e.g., DOT, EPA, FDA).</p>
                 </div>
+                @if (!isEdit)
+                {
+                    <div class="help-section">
+                        <h4><i class="fas fa-user"></i> Admin User</h4>
+                        <p>When creating a new tenant, an administrator account will be created for managing the agency.</p>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -189,29 +303,50 @@
         }
         
         .col-lg-4, .col-lg-8 { 
-            flex: 0 0 100%; 
-            max-width: 100%; 
             padding: 0 0.75rem; 
         }
         
+        .col-lg-8 { 
+            flex: 0 0 100%; 
+            max-width: 100%; 
+        }
+        
+        .col-lg-4 { 
+            flex: 0 0 100%; 
+            max-width: 100%;
+            margin-top: 1.5rem;
+        }
+        
         @@media (min-width: 1024px) {
-            .col-lg-4 { flex: 0 0 33.333%; max-width: 33.333%; }
-            .col-lg-8 { flex: 0 0 66.666%; max-width: 66.666%; }
+            .col-lg-8 { 
+                flex: 0 0 66.666667%; 
+                max-width: 66.666667%; 
+            }
+            
+            .col-lg-4 { 
+                flex: 0 0 33.333333%; 
+                max-width: 33.333333%; 
+                margin-top: 0;
+            }
         }
         
         .help-section {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-100);
         }
         
         .help-section:last-child {
             margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
         }
         
         .help-section h4 {
             font-size: 0.875rem;
             font-weight: 600;
-            color: var(--gray-900);
-            margin-bottom: 0.5rem;
+            color: var(--gray-800);
+            margin: 0 0 0.5rem 0;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -222,25 +357,10 @@
         }
         
         .help-section p {
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             color: var(--gray-600);
-            line-height: 1.6;
             margin: 0;
-        }
-        
-        .help-section ul {
-            margin: 0;
-            padding-left: 1.25rem;
-            font-size: 0.875rem;
-            color: var(--gray-600);
-        }
-        
-        .help-section ul li {
-            margin-bottom: 0.375rem;
+            line-height: 1.5;
         }
     </style>
-}
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
 }

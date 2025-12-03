@@ -118,6 +118,7 @@ paymentServiceApi = paymentServiceApi
 // Register Web UI project with reference to all services for API calls
 var webApp = builder.AddProject<Projects.LicenseManagement_Web>("WebApp")
     .WithHttpEndpoint(port: 5000, name: "webapp-http")
+    .WithHttpsEndpoint(port: 7000, name: "webapp-https")
     .WithReference(tenantServiceApi)
     .WithReference(licenseServiceApi)
     .WithReference(documentServiceApi)
@@ -132,10 +133,5 @@ var webApp = builder.AddProject<Projects.LicenseManagement_Web>("WebApp")
     .WithEnvironment("JwtSettings__ExpiryMinutes", jwtExpiryMinutes)
     .WithEnvironment("JwtSettings__Issuer", jwtIssuer)
     .WithEnvironment("JwtSettings__Audience", jwtAudience);
-
-if (!builder.Environment.IsDevelopment())
-{
-    webApp = webApp.WithHttpsEndpoint(port: 7000, name: "webapp-https");
-}
 
 builder.Build().Run();

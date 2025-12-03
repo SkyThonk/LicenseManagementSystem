@@ -5,7 +5,8 @@ using LicenseManagement.Web.Filters;
 
 namespace LicenseManagement.Web.Controllers;
 
-[RequireRole("TenantAdmin")]
+[RequireAuthentication]
+[Route("tenants")]
 public class TenantsController : Controller
 {
     private readonly ITenantService _tenantService;
@@ -17,6 +18,8 @@ public class TenantsController : Controller
         _logger = logger;
     }
 
+    [HttpGet("")]
+    [HttpGet("index")]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, CancellationToken cancellationToken = default)
     {
         ViewData["Title"] = "Tenants";
@@ -34,6 +37,7 @@ public class TenantsController : Controller
         }
     }
 
+    [HttpGet("details/{id:guid}")]
     public async Task<IActionResult> Details(Guid id, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "Tenant Details";
@@ -58,13 +62,14 @@ public class TenantsController : Controller
         }
     }
 
+    [HttpGet("create")]
     public IActionResult Create()
     {
         ViewData["Title"] = "Create Tenant";
         return View(new TenantFormViewModel());
     }
 
-    [HttpPost]
+    [HttpPost("create")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(TenantFormViewModel model, CancellationToken cancellationToken)
     {
@@ -96,6 +101,7 @@ public class TenantsController : Controller
         }
     }
 
+    [HttpGet("edit/{id:guid}")]
     public async Task<IActionResult> Edit(Guid id, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "Edit Tenant";
@@ -114,11 +120,15 @@ public class TenantsController : Controller
             {
                 Id = tenant.Id,
                 Name = tenant.Name,
+                AgencyCode = tenant.AgencyCode,
+                Description = tenant.Description,
                 Email = tenant.Email,
-                Phone = tenant.Phone,
-                Address = tenant.Address,
-                City = tenant.City,
-                Country = tenant.Country
+                Logo = tenant.Logo,
+                AddressLine = tenant.AddressLineOne ?? string.Empty,
+                City = tenant.City ?? string.Empty,
+                State = tenant.State ?? string.Empty,
+                CountryCode = tenant.PhoneCountryCode ?? string.Empty,
+                PhoneNumber = tenant.PhoneNumber ?? string.Empty
             };
 
             return View(model);
@@ -131,11 +141,17 @@ public class TenantsController : Controller
         }
     }
 
-    [HttpPost]
+    [HttpPost("edit/{id:guid}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Guid id, TenantFormViewModel model, CancellationToken cancellationToken)
     {
         ViewData["Title"] = "Edit Tenant";
+
+        // For edit, some fields are not required
+        ModelState.Remove(nameof(TenantFormViewModel.AgencyCode));
+        ModelState.Remove(nameof(TenantFormViewModel.FirstName));
+        ModelState.Remove(nameof(TenantFormViewModel.LastName));
+        ModelState.Remove(nameof(TenantFormViewModel.Password));
 
         if (!ModelState.IsValid)
         {
@@ -163,7 +179,7 @@ public class TenantsController : Controller
         }
     }
 
-    [HttpPost]
+    [HttpPost("delete/{id:guid}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
@@ -189,7 +205,7 @@ public class TenantsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost]
+    [HttpPost("activate/{id:guid}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Activate(Guid id, CancellationToken cancellationToken)
     {
@@ -215,7 +231,7 @@ public class TenantsController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
-    [HttpPost]
+    [HttpPost("deactivate/{id:guid}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Deactivate(Guid id, CancellationToken cancellationToken)
     {

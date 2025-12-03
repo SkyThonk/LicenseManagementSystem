@@ -45,12 +45,14 @@
         const isCollapsed = localStorage.getItem(Config.sidebarCollapsedKey) === 'true';
         if (isCollapsed && window.innerWidth > 1024) {
             sidebar.classList.add('collapsed');
+            document.body.classList.add('sidebar-collapsed');
         }
 
         // Desktop toggle
         if (sidebarToggle) {
             sidebarToggle.addEventListener('click', function () {
                 sidebar.classList.toggle('collapsed');
+                document.body.classList.toggle('sidebar-collapsed');
                 localStorage.setItem(Config.sidebarCollapsedKey, sidebar.classList.contains('collapsed'));
             });
         }

@@ -18,8 +18,8 @@
 </div>
 
 <!-- Filters -->
-<div class="card mb-4">
-    <div class="card-body">
+<div class="card filter-card">
+    <div class="card-body filter-body">
         <form method="get" class="filter-form">
             <div class="filter-row">
                 <div class="filter-group">
@@ -181,4 +181,61 @@
         "Trial" => "warning",
         _ => "secondary"
     };
+}
+
+@section Styles {
+    <style>
+        /* Filter Card - Compact styling */
+        .filter-card {
+            margin-bottom: 1rem;
+        }
+        
+        .filter-card .filter-body {
+            padding: 0.75rem 1rem !important;
+        }
+        
+        .filter-form .filter-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 150px;
+            max-width: 220px;
+        }
+        
+        .filter-group .form-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            color: var(--gray-600);
+        }
+        
+        .filter-group .form-control,
+        .filter-group .form-select {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.875rem;
+            height: auto;
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            padding-bottom: 0;
+        }
+        
+        .filter-actions .btn {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        /* Table wrapper */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+    </style>
 }

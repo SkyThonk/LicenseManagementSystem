@@ -5,6 +5,7 @@ using LicenseManagement.Web.Filters;
 namespace LicenseManagement.Web.Controllers;
 
 [RequireAuthentication]
+[Route("payments")]
 public class PaymentsController : Controller
 {
     private readonly IPaymentService _paymentService;
@@ -18,14 +19,15 @@ public class PaymentsController : Controller
         _logger = logger;
     }
 
-    [HttpGet]
+    [HttpGet("")]
+    [HttpGet("index")]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, string? status = null)
     {
         var viewModel = await _paymentService.GetPaymentsAsync(page, pageSize, search, status);
         return View(viewModel);
     }
 
-    [HttpGet]
+    [HttpGet("details/{id:guid}")]
     public async Task<IActionResult> Details(Guid id)
     {
         var viewModel = await _paymentService.GetPaymentByIdAsync(id);
@@ -37,7 +39,7 @@ public class PaymentsController : Controller
         return View(viewModel);
     }
 
-    [HttpPost]
+    [HttpPost("refund/{id:guid}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Refund(Guid id)
     {

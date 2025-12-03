@@ -3,5 +3,104 @@
     ViewData["Title"] = "Edit License";
 }
 
-<!-- Use the same form as Create -->
-@await Html.PartialAsync("Create", Model)
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header-content">
+        <nav class="breadcrumb">
+            <a href="/licenses">Licenses</a>
+            <span class="breadcrumb-separator">/</span>
+            <a href="/licenses/details/@Model.Id">License Details</a>
+            <span class="breadcrumb-separator">/</span>
+            <span>Edit</span>
+        </nav>
+        <h1 class="page-title">Edit License</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form method="post" asp-action="Edit">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" value="@Model.Id" />
+
+            <!-- License Details -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">License Details</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label asp-for="LicenseTypeId" class="form-label">
+                            License Type <span class="required">*</span>
+                        </label>
+                        <select asp-for="LicenseTypeId" class="form-select" id="licenseTypeSelect">
+                            @foreach (var item in Model.LicenseTypes)
+                            {
+                                <option value="@item.Value" selected="@(item.Value == Model.LicenseTypeId.ToString())">@item.Text</option>
+                            }
+                        </select>
+                        <span asp-validation-for="LicenseTypeId" class="form-error"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions form-actions-right">
+                <a href="/licenses/details/@Model.Id" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i>
+                    Update License
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Information</h3>
+            </div>
+            <div class="card-body">
+                <div class="help-section">
+                    <h4><i class="fas fa-info-circle"></i> Editing License</h4>
+                    <p>You can change the license type for this application. Other details like status are managed through the approval workflow.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -0.75rem;
+        }
+        
+        .col-lg-4, .col-lg-8 { padding: 0 0.75rem; flex: 0 0 100%; max-width: 100%; }
+        
+        @@media (min-width: 1024px) {
+            .col-lg-4 { flex: 0 0 33.333%; max-width: 33.333%; }
+            .col-lg-8 { flex: 0 0 66.666%; max-width: 66.666%; }
+        }
+        
+        .mb-4 { margin-bottom: 1rem; }
+        
+        .help-section h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .help-section p {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            margin: 0;
+        }
+    </style>
+}

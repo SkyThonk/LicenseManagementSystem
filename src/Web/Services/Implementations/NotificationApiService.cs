@@ -1,18 +1,19 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 using LicenseManagement.Web.Services.Abstractions;
 
 namespace LicenseManagement.Web.Services.Implementations;
 
-public class ApiService : IApiService
+public class NotificationApiService : INotificationApiService
 {
     private readonly HttpClient _httpClient;
     private readonly IAuthService _authService;
-    private readonly ILogger<ApiService> _logger;
+    private readonly ILogger<NotificationApiService> _logger;
     private readonly JsonSerializerOptions _jsonOptions;
 
-    public ApiService(HttpClient httpClient, IAuthService authService, ILogger<ApiService> logger)
+    public NotificationApiService(HttpClient httpClient, IAuthService authService, ILogger<NotificationApiService> logger)
     {
         _httpClient = httpClient;
         _authService = authService;
@@ -51,7 +52,7 @@ public class ApiService : IApiService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calling GET {Endpoint}", endpoint);
-            throw;
+            return default;
         }
     }
 
@@ -73,51 +74,7 @@ public class ApiService : IApiService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calling POST {Endpoint}", endpoint);
-            throw;
-        }
-    }
-
-    public async Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest request, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            SetAuthorizationHeader();
-            var response = await _httpClient.PutAsJsonAsync(endpoint, request, _jsonOptions, cancellationToken);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadFromJsonAsync<TResponse>(_jsonOptions, cancellationToken);
-            }
-
-            _logger.LogWarning("PUT {Endpoint} returned {StatusCode}", endpoint, response.StatusCode);
             return default;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error calling PUT {Endpoint}", endpoint);
-            throw;
-        }
-    }
-
-    public async Task<TResponse?> PatchAsync<TResponse>(string endpoint, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            SetAuthorizationHeader();
-            var response = await _httpClient.PatchAsync(endpoint, null, cancellationToken);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                return await response.Content.ReadFromJsonAsync<TResponse>(_jsonOptions, cancellationToken);
-            }
-
-            _logger.LogWarning("PATCH {Endpoint} returned {StatusCode}", endpoint, response.StatusCode);
-            return default;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error calling PATCH {Endpoint}", endpoint);
-            throw;
         }
     }
 
@@ -126,7 +83,8 @@ public class ApiService : IApiService
         try
         {
             SetAuthorizationHeader();
-            var content = JsonContent.Create(request, options: _jsonOptions);
+            var json = JsonSerializer.Serialize(request, _jsonOptions);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await _httpClient.PatchAsync(endpoint, content, cancellationToken);
             
             if (response.IsSuccessStatusCode)
@@ -140,44 +98,29 @@ public class ApiService : IApiService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error calling PATCH {Endpoint}", endpoint);
-            throw;
+            return default;
         }
     }
 
-    public async Task<bool> DeleteAsync(string endpoint, CancellationToken cancellationToken = default)
+    public async Task<TResponse?> DeleteAsync<TResponse>(string endpoint, CancellationToken cancellationToken = default)
     {
         try
         {
             SetAuthorizationHeader();
             var response = await _httpClient.DeleteAsync(endpoint, cancellationToken);
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error calling DELETE {Endpoint}", endpoint);
-            throw;
-        }
-    }
-
-    public async Task<TResponse?> PostFormDataAsync<TResponse>(string endpoint, MultipartFormDataContent content, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            SetAuthorizationHeader();
-            var response = await _httpClient.PostAsync(endpoint, content, cancellationToken);
             
             if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadFromJsonAsync<TResponse>(_jsonOptions, cancellationToken);
             }
 
-            _logger.LogWarning("POST FormData {Endpoint} returned {StatusCode}", endpoint, response.StatusCode);
+            _logger.LogWarning("DELETE {Endpoint} returned {StatusCode}", endpoint, response.StatusCode);
             return default;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error calling POST FormData {Endpoint}", endpoint);
-            throw;
+            _logger.LogError(ex, "Error calling DELETE {Endpoint}", endpoint);
+            return default;
         }
     }
 }
