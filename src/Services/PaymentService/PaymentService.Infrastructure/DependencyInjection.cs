@@ -1,7 +1,8 @@
+using Common.Application.Interfaces.Authentication;
+using Common.Infrastructure.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using PaymentService.Infrastructure.Authentication;
 
 namespace PaymentService.Infrastructure;
 

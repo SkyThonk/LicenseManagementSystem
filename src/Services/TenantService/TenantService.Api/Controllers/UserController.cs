@@ -8,7 +8,7 @@ using TenantService.Contracts.User.GetUserList;
 using Common.Application.Result;
 using Wolverine;
 using Microsoft.AspNetCore.Mvc;
-using Identity.Api.Extensions;
+using TenantService.Api.Extensions;
 using Microsoft.AspNetCore.Authorization;
 
 namespace TenantService.Api.Controllers;

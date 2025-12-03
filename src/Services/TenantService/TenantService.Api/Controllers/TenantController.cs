@@ -6,7 +6,7 @@ using TenantService.Contracts.Tenant.GetTenantList;
 using Common.Application.Result;
 using Wolverine;
 using Microsoft.AspNetCore.Mvc;
-using Identity.Api.Extensions;
+using TenantService.Api.Extensions;
 
 namespace TenantService.Api.Controllers;
 

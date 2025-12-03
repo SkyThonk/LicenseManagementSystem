@@ -1,7 +1,7 @@
 using Common.Application.Result;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Identity.Api.Extensions;
+namespace TenantService.Api.Extensions;
 
 public static class ResultExtensions
 {

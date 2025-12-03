@@ -12,7 +12,7 @@ using PaymentService.Contracts.Payments.CreatePayment;
 using PaymentService.Contracts.Payments.GetPayment;
 using PaymentService.Contracts.Payments.GetPayments;
 using PaymentService.Contracts.Payments.ProcessPayment;
-using PaymentService.Infrastructure.Authentication;
+using Common.Application.Interfaces.Authentication;
 
 namespace PaymentService.Api.Controllers;
 

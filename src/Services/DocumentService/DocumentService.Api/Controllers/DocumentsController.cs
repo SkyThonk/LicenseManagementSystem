@@ -10,7 +10,7 @@ using DocumentService.Contracts.Documents.GetDocument;
 using DocumentService.Contracts.Documents.GetDocumentDownloadUrl;
 using DocumentService.Contracts.Documents.GetDocuments;
 using DocumentService.Contracts.Documents.UploadDocument;
-using DocumentService.Infrastructure.Authentication;
+using Common.Application.Interfaces.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Wolverine;
@@ -59,7 +59,7 @@ public class DocumentsController : ControllerBase
             (int)(file.Length / 1024), // Convert to KB
             stream);
 
-        var command = new UploadDocumentCommand(request, _userContext.UserId ?? Guid.Empty);
+        var command = new UploadDocumentCommand(request, _userContext.UserId);
         var result = await _messageBus.InvokeAsync<Result<UploadDocumentResponse>>(command, ct);
         return result.ToActionResult(this);
     }

@@ -1,8 +1,9 @@
+using Common.Application.Interfaces.Authentication;
+using Common.Infrastructure.Authentication;
 using Common.Infrastructure.Messaging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NotificationService.Infrastructure.Authentication;
 
 namespace NotificationService.Infrastructure;
 

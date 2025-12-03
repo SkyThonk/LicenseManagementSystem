@@ -1,6 +1,7 @@
+using Common.Application.Interfaces.Authentication;
+using Common.Infrastructure.Authentication;
 using Common.Infrastructure.Messaging;
 using DocumentService.Application.Common.Interfaces.Services;
-using DocumentService.Infrastructure.Authentication;
 using DocumentService.Infrastructure.EventHandlers;
 using DocumentService.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;

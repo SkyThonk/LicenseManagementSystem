@@ -1,8 +1,6 @@
-using TenantService.Application.Common.Interfaces.Authentication;
 using TenantService.Application.Common.Interfaces.Messaging;
 using TenantService.Infrastructure.Messaging;
 using TenantService.Infrastructure.Authentication;
-// No Common.* using directives here to avoid naming conflicts; use fully-qualified types instead
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,12 +22,12 @@ public static class DependencyInjection
         services.Configure<KafkaSettings>(builder.Configuration.GetSection(KafkaSettings.SectionName));
 
         // TenantService-specific token generator registration
-        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddSingleton<TenantService.Application.Common.Interfaces.Authentication.IJwtTokenGenerator, JwtTokenGenerator>();
         // Also register the Common.Application IJwtTokenGenerator implemented by Common.Infrastructure
         services.AddSingleton<Common.Application.Interfaces.Authentication.IJwtTokenGenerator, Common.Infrastructure.Authentication.JwtTokenGenerator>();
-        services.AddSingleton<IPasswordHasher, PasswordHasher>();
+        services.AddSingleton<TenantService.Application.Common.Interfaces.Authentication.IPasswordHasher, PasswordHasher>();
         services.AddHttpContextAccessor();
-        services.AddScoped<IUserContext, UserContext>();
+        services.AddScoped<Common.Application.Interfaces.Authentication.IUserContext, Common.Infrastructure.Authentication.UserContext>();
         
         // Register email service
         services.AddScoped<TenantService.Application.Common.Interfaces.Services.IEmailService, Services.EmailService>();
