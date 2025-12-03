@@ -401,6 +401,8 @@ dotnet test src/Services/LicenseService/LicenseService.Tests
 
 - **CQRS**: Commands (writes) and Queries (reads) are separated. Command handlers and query handlers live in `Application` so business workflows remain testable and focused.
 
+- **Result Pattern**: All command and query handlers return a `Result<T>` type instead of throwing exceptions for expected failures. This provides explicit error handling, makes the API contract clearer, and allows callers to handle success/failure cases gracefully. Error types (e.g., `NotFoundError`, `ValidationError`) are part of the result, enabling consistent error responses across all endpoints.
+
 - **Wolverine for Messaging**: The project uses **Wolverine** (instead of MediatR) for in-process messaging, durable messaging, and background processing. Wolverine handles command/query dispatch (if used in-process), message routing, and can integrate with durable transports and outbox patterns.
 
 - **Domain Events & Dispatching**: Aggregates raise domain events which are dispatched by a domain event dispatcher. Handlers for domain events live in `Application` or `Infrastructure` depending on whether they trigger local side-effects or integration events.
