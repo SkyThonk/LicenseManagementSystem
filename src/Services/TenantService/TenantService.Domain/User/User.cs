@@ -3,7 +3,7 @@ using TenantService.Domain.Tenant;
 
 namespace TenantService.Domain.User;
 
-public class User : Entity<UserId>
+public sealed class User : Entity<UserId>
 {
     private User(
         UserId id,

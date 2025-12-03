@@ -9,7 +9,7 @@ namespace TenantService.Domain.Tenant;
 /// Represents a Government Agency (tenant) that manages professional licenses.
 /// Each agency operates independently with its own set of licenses (multi-tenancy isolation).
 /// </summary>
-public class Tenant : Entity<TenantId>
+public sealed class Tenant : Entity<TenantId>
 {
     private Tenant(
         TenantId id,

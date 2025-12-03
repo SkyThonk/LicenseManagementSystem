@@ -20,13 +20,6 @@ internal sealed class UserRepository : Repository<User, UserId>, IUserRepository
             .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower(), cancellationToken);
     }
 
-    public async Task<List<User>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        return await _dataContext.Set<User>()
-            .OrderByDescending(u => u.CreatedAt)
-            .ToListAsync(cancellationToken);
-    }
-
     public async Task<(List<User> Users, int TotalCount)> GetPagedAsync(
         int page, 
         int pageSize, 

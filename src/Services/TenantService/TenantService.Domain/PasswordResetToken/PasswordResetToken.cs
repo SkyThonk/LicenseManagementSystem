@@ -3,7 +3,7 @@ using TenantService.Domain.User;
 
 namespace TenantService.Domain.PasswordResetToken;
 
-public class PasswordResetToken : Entity<PasswordResetTokenId>
+public sealed class PasswordResetToken : Entity<PasswordResetTokenId>
 {
     private PasswordResetToken(
         PasswordResetTokenId id,

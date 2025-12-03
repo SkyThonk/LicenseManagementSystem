@@ -197,32 +197,32 @@ public class CqrsHandlerArchitectureTests
         {
             var @namespace = handlerType.Namespace ?? string.Empty;
 
-            // Query handlers should live under a .Query namespace
+            // Query handlers should live under a .Query or .Queries namespace
             if (handlerType.GetInterfaces().Any(i => i.IsGenericType &&
                 i.GetGenericTypeDefinition() == typeof(IQueryHandler<,>)))
             {
-                if (!@namespace.Contains(".Query"))
+                if (!@namespace.Contains(".Query") && !@namespace.Contains(".Queries"))
                 {
-                    failures.Add($"{handlerType.Name} is a query handler but not in a .Query namespace");
+                    failures.Add($"{handlerType.Name} is a query handler but not in a .Query or .Queries namespace");
                 }
             }
 
-            // Command handlers should live under a .Command namespace
+            // Command handlers should live under a .Command or .Commands namespace
             if (handlerType.GetInterfaces().Any(i => i.IsGenericType &&
                 i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>)))
             {
-                if (!@namespace.Contains(".Command"))
+                if (!@namespace.Contains(".Command") && !@namespace.Contains(".Commands"))
                 {
-                    failures.Add($"{handlerType.Name} is a command handler but not in a .Command namespace");
+                    failures.Add($"{handlerType.Name} is a command handler but not in a .Command or .Commands namespace");
                 }
             }
 
-            // Event handlers should live under an .Event namespace
+            // Event handlers should live under an .Event or .Events namespace
             if (handlerType.Name.EndsWith("EventHandler"))
             {
-                if (!@namespace.Contains(".Event"))
+                if (!@namespace.Contains(".Event") && !@namespace.Contains(".Events"))
                 {
-                    failures.Add($"{handlerType.Name} is an event handler but not in a .Event namespace");
+                    failures.Add($"{handlerType.Name} is an event handler but not in a .Event or .Events namespace");
                 }
             }
         }

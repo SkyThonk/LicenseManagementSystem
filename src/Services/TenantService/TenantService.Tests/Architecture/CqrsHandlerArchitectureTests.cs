@@ -112,11 +112,18 @@ public class CqrsHandlerArchitectureTests
     {
         var failures = new List<string>();
 
+        // Command handlers that don't require IUnitOfWork (read-only commands like Login)
+        var excludedHandlers = new HashSet<string>
+        {
+            "LoginCommandHandler" // Login is a read-only command that doesn't modify state
+        };
+
         // Filter only command handlers by interface
         var commandHandlers = _allHandlerTypes
             .Where(t => t.GetInterfaces()
                 .Any(i => i.IsGenericType && 
                           i.GetGenericTypeDefinition() == typeof(ICommandHandler<,>)))
+            .Where(t => !excludedHandlers.Contains(t.Name))
             .ToList();
 
         foreach (var commandHandler in commandHandlers)

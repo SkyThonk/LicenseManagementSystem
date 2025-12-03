@@ -22,7 +22,9 @@
   <ItemGroup>
     <ProjectReference Include="..\TenantService.Api\TenantService.Api.csproj" />
     <ProjectReference Include="..\TenantService.Application\TenantService.Application.csproj" />
+    <ProjectReference Include="..\TenantService.Domain\TenantService.Domain.csproj" />
     <ProjectReference Include="..\..\..\Common\Common.Application\Common.Application.csproj" />
+    <ProjectReference Include="..\..\..\Common\Common.Domain\Common.Domain.csproj" />
   </ItemGroup>
 
 </Project>
