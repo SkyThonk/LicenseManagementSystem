@@ -1,6 +1,7 @@
 using Common.Application.Interfaces.Authentication;
 using Common.Infrastructure.Authentication;
 using Common.Infrastructure.Messaging;
+using Common.Infrastructure.Migration;
 using DocumentService.Application.Common.Interfaces.Services;
 using DocumentService.Infrastructure.EventHandlers;
 using DocumentService.Infrastructure.Services;
@@ -21,16 +22,6 @@ public static class DependencyInjection
         services.Configure<Common.Infrastructure.Authentication.JwtSettings>(
             builder.Configuration.GetSection(Common.Infrastructure.Authentication.JwtSettings.SectionName));
 
-        // Configure Redis messaging settings for event consumption
-        services.Configure<RedisMessagingSettings>(options =>
-        {
-            var redisConnectionString = builder.Configuration.GetConnectionString("redis");
-            if (!string.IsNullOrEmpty(redisConnectionString))
-            {
-                options.ConnectionString = redisConnectionString;
-            }
-        });
-
         // Register Common JWT token generator
         services.AddSingleton<Common.Application.Interfaces.Authentication.IJwtTokenGenerator,
             Common.Infrastructure.Authentication.JwtTokenGenerator>();
@@ -47,9 +38,12 @@ public static class DependencyInjection
             options.Configuration = builder.Configuration.GetConnectionString("redis");
         });
 
-        // Register Redis tenant event consumer (for per-tenant database provisioning)
-        services.AddSingleton<ITenantEventHandler, DocumentTenantEventHandler>();
-        services.AddHostedService<RedisTenantEventConsumer>();
+        // Register tenant database creator for dynamic database provisioning
+        services.AddScoped<ITenantDatabaseCreator, TenantDatabaseCreator>();
+
+        // Register Redis tenant event consumer
+        services.AddRedisEventConsumer(builder.Configuration);
+        services.AddTenantEventHandler<DocumentTenantEventHandler>();
 
         return services;
     }

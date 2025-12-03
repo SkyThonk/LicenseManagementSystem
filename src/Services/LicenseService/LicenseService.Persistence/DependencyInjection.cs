@@ -1,19 +1,16 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using LicenseService.Persistence.Data;
-using Wolverine;
-using Wolverine.EntityFrameworkCore;
-using Wolverine.Postgresql;
-using System.Reflection;
 using LicenseService.Persistence.Common;
 using LicenseService.Application.Common.Interfaces;
 using LicenseService.Application.Common.Interfaces.Repositories;
 using LicenseService.Persistence.Repositories;
 using LicenseService.Persistence.Services;
 using Common.Domain.Abstractions;
-using Common.Infrastructure.Migration;
+using Common.Infrastructure.MultiTenancy;
+using System.Reflection;
+using Wolverine;
 
 namespace LicenseService.Persistence;
 
@@ -27,16 +24,11 @@ public static class DependencyInjection
         var connectionString = builder.Configuration.GetConnectionString("SQL")
                ?? throw new InvalidOperationException("Connection string 'SQL' not found.");
 
-        // Add Wolverine to the host and configure its EF Core integration
+        // Add Wolverine for in-memory message bus (no outbox persistence for tenant-aware service)
         builder.UseWolverine(opts =>
         {
-            // Configure Wolverine durable message persistence in PostgreSQL
-            opts.PersistMessagesWithPostgresql(connectionString);
-
+            // Use in-memory queues only - no PostgreSQL persistence
             opts.Policies.UseDurableLocalQueues();
-
-            // You can also add more specific policies for resilience
-            opts.Policies.UseDurableOutboxOnAllSendingEndpoints();
 
             // Ensure Wolverine discovers handlers in the Application assembly
             try
@@ -50,9 +42,16 @@ public static class DependencyInjection
             }
         });
 
-        // Add EF Core with PostgreSQL
-        services.AddDbContext<DataContext>(options =>
-            options.UseNpgsql(connectionString));
+        // Configure tenant database settings with service prefix
+        services.Configure<TenantDatabaseSettings>(options =>
+        {
+            options.ServicePrefix = "license";
+            options.CentralConnectionString = connectionString;
+            options.UseSeparateDatabases = true;
+        });
+
+        // Add multi-tenancy support - DbContext is resolved per-request based on JWT tenant claim
+        services.AddMultiTenancy<DataContext>(builder.Configuration);
 
         // Register UnitOfWork
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -67,8 +66,8 @@ public static class DependencyInjection
         services.AddScoped<ILicenseStatusHistoryRepository, LicenseStatusHistoryRepository>();
         services.AddScoped<IRenewalRepository, RenewalRepository>();
 
-        // Add database migration service to run at startup
-        services.AddSimpleDatabaseMigration<DataContext>();
+        // Note: Database migrations for tenant databases are handled when tenants are created
+        // via the TenantCreatedEvent handler, not at service startup
 
         return services;
     }

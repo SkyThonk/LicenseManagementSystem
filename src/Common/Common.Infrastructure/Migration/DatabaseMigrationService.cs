@@ -55,8 +55,43 @@ public class DatabaseMigrationService<TContext> : BackgroundService where TConte
 
         _logger.LogInformation("Ensuring database exists and applying migrations...");
         
-        // Create database if not exists and apply migrations
-        await context.Database.MigrateAsync(ct);
+        // Check if database can connect, if not try to create it
+        var canConnect = await context.Database.CanConnectAsync(ct);
+        if (!canConnect)
+        {
+            _logger.LogInformation("Database does not exist, attempting to create...");
+            try
+            {
+                // For PostgreSQL on Neon, the database must be created via their dashboard
+                // EnsureCreated will create tables if they don't exist
+                await context.Database.EnsureCreatedAsync(ct);
+                _logger.LogInformation("Database schema created successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not ensure database creation. Attempting migration anyway...");
+            }
+        }
+        
+        // Apply migrations
+        try
+        {
+            var pendingMigrations = await context.Database.GetPendingMigrationsAsync(ct);
+            if (pendingMigrations.Any())
+            {
+                _logger.LogInformation("Applying {Count} pending migrations...", pendingMigrations.Count());
+                await context.Database.MigrateAsync(ct);
+            }
+            else
+            {
+                _logger.LogInformation("No pending migrations to apply");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Migration failed. Database may not exist on Neon. Please create it via Neon dashboard.");
+            throw;
+        }
         
         _logger.LogInformation("Database migration completed for default database");
     }

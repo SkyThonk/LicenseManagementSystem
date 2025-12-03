@@ -1,16 +1,29 @@
 using Common.Domain.Abstractions;
+using Microsoft.Extensions.Logging;
+using Wolverine;
 
 namespace NotificationService.Persistence.Services;
 
-internal sealed class DomainEventDispatcher(Wolverine.IMessageBus messageBus) : IDomainEventDispatcher
+/// <summary>
+/// Domain event dispatcher using Wolverine IMessageBus.
+/// Events are dispatched in-memory without outbox persistence.
+/// </summary>
+internal sealed class DomainEventDispatcher : IDomainEventDispatcher
 {
-    private readonly Wolverine.IMessageBus _messageBus = messageBus;
+    private readonly IMessageBus _messageBus;
+    private readonly ILogger<DomainEventDispatcher> _logger;
+
+    public DomainEventDispatcher(IMessageBus messageBus, ILogger<DomainEventDispatcher> logger)
+    {
+        _messageBus = messageBus;
+        _logger = logger;
+    }
 
     public async Task DispatchAsync(IEnumerable<IDomainEvent> domainEvents, CancellationToken cancellationToken = default)
     {
         foreach (var @event in domainEvents)
         {
-            // Publish as in-process events; Wolverine will outbox them within the EF transaction
+            _logger.LogInformation("Dispatching domain event: {EventType}", @event.GetType().Name);
             await _messageBus.PublishAsync(@event);
         }
     }

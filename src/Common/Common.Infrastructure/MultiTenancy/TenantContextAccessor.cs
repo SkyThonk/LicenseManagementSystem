@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Npgsql;
 
 namespace Common.Infrastructure.MultiTenancy;
 
@@ -11,16 +13,21 @@ namespace Common.Infrastructure.MultiTenancy;
 public class TenantContextAccessor : ITenantContext
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IConfiguration _configuration;
     private readonly TenantDatabaseSettings _settings;
+    private readonly string _servicePrefix;
     private Guid? _cachedTenantId;
     private string? _cachedConnectionString;
 
     public TenantContextAccessor(
         IHttpContextAccessor httpContextAccessor,
+        IConfiguration configuration,
         IOptions<TenantDatabaseSettings> settings)
     {
         _httpContextAccessor = httpContextAccessor;
+        _configuration = configuration;
         _settings = settings.Value;
+        _servicePrefix = _settings.ServicePrefix ?? "service";
     }
 
     public Guid TenantId
@@ -51,17 +58,25 @@ public class TenantContextAccessor : ITenantContext
             if (_cachedConnectionString != null)
                 return _cachedConnectionString;
 
-            if (!_settings.UseSeparateDatabases)
+            // Get the base connection string
+            var baseConnectionString = _configuration.GetConnectionString("SQL") 
+                ?? _settings.CentralConnectionString;
+
+            if (string.IsNullOrEmpty(baseConnectionString))
             {
-                _cachedConnectionString = _settings.CentralConnectionString;
-                return _cachedConnectionString;
+                throw new InvalidOperationException("SQL connection string not configured");
             }
 
-            // Replace placeholder with actual tenant ID
-            _cachedConnectionString = _settings.TenantConnectionStringTemplate
-                .Replace("{TenantId}", TenantId.ToString())
-                .Replace("{tenantId}", TenantId.ToString());
+            // Build tenant-specific database name: {servicePrefix}_{tenantId}
+            var tenantDbName = $"{_servicePrefix}_{TenantId:N}".ToLowerInvariant();
 
+            // Parse and modify the connection string
+            var builder = new NpgsqlConnectionStringBuilder(baseConnectionString)
+            {
+                Database = tenantDbName
+            };
+
+            _cachedConnectionString = builder.ConnectionString;
             return _cachedConnectionString;
         }
     }

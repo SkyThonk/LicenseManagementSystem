@@ -159,6 +159,14 @@ public class RedisTenantEventConsumer : BackgroundService
         // Parse the connection string to extract host, port, user, password
         var connectionString = _settings.ConnectionString;
         
+        _logger.LogInformation("Building Redis configuration from connection string: {ConnectionStringLength} chars", 
+            connectionString?.Length ?? 0);
+        
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException("Redis connection string is not configured");
+        }
+        
         var configOptions = new ConfigurationOptions
         {
             AbortOnConnectFail = true,
@@ -173,11 +181,13 @@ public class RedisTenantEventConsumer : BackgroundService
         foreach (var part in parts)
         {
             var trimmed = part.Trim();
+            if (string.IsNullOrEmpty(trimmed)) continue;
+            
             if (trimmed.Contains('='))
             {
                 var keyValue = trimmed.Split('=', 2);
                 var key = keyValue[0].Trim().ToLowerInvariant();
-                var value = keyValue[1].Trim();
+                var value = keyValue.Length > 1 ? keyValue[1].Trim() : "";
                 
                 switch (key)
                 {
@@ -188,7 +198,8 @@ public class RedisTenantEventConsumer : BackgroundService
                         configOptions.Password = value;
                         break;
                     case "abortconnect":
-                        configOptions.AbortOnConnectFail = bool.Parse(value);
+                        if (bool.TryParse(value, out var abort))
+                            configOptions.AbortOnConnectFail = abort;
                         break;
                 }
             }
@@ -196,8 +207,17 @@ public class RedisTenantEventConsumer : BackgroundService
             {
                 // This is host:port
                 var hostPort = trimmed.Split(':');
-                configOptions.EndPoints.Add(hostPort[0], int.Parse(hostPort[1]));
+                if (hostPort.Length == 2 && int.TryParse(hostPort[1], out var port))
+                {
+                    configOptions.EndPoints.Add(hostPort[0], port);
+                    _logger.LogInformation("Added Redis endpoint: {Host}:{Port}", hostPort[0], port);
+                }
             }
+        }
+        
+        if (configOptions.EndPoints.Count == 0)
+        {
+            throw new InvalidOperationException($"No valid Redis endpoints found in connection string. String starts with: {connectionString.Substring(0, Math.Min(20, connectionString.Length))}...");
         }
 
         return configOptions;

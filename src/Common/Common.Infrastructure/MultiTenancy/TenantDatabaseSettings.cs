@@ -25,4 +25,11 @@ public class TenantDatabaseSettings
     /// If false, uses a single shared database with TenantId column filtering.
     /// </summary>
     public bool UseSeparateDatabases { get; set; } = true;
+
+    /// <summary>
+    /// The service prefix for tenant database names.
+    /// Database name format: {ServicePrefix}_{TenantId}
+    /// Example: "license" results in database name "license_abc123..."
+    /// </summary>
+    public string ServicePrefix { get; set; } = "service";
 }

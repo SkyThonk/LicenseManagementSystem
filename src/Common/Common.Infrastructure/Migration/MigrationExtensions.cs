@@ -26,6 +26,9 @@ public static class MigrationExtensions
             services.AddHttpClient<ITenantProvider, TenantServiceProvider>();
         }
 
+        // Register tenant database creator for dynamic database creation
+        services.AddScoped<ITenantDatabaseCreator, TenantDatabaseCreator>();
+
         // Register the migration service as a hosted service
         services.AddHostedService(sp =>
         {

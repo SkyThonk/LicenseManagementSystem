@@ -1,4 +1,5 @@
 using Common.Infrastructure.Messaging;
+using Common.Infrastructure.Migration;
 using LicenseService.Infrastructure.EventHandlers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,9 @@ public static class DependencyInjection
         {
             options.Configuration = builder.Configuration.GetConnectionString("redis");
         });
+
+        // Register tenant database creator for dynamic database provisioning
+        services.AddScoped<ITenantDatabaseCreator, TenantDatabaseCreator>();
 
         // Add Redis event consumer for tenant events
         services.AddRedisEventConsumer(builder.Configuration);

@@ -1,6 +1,5 @@
 using Common.Domain.Abstractions;
-using Common.Infrastructure.Migration;
-using Microsoft.EntityFrameworkCore;
+using Common.Infrastructure.MultiTenancy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -12,8 +11,6 @@ using NotificationService.Persistence.Repositories;
 using NotificationService.Persistence.Services;
 using System.Reflection;
 using Wolverine;
-using Wolverine.EntityFrameworkCore;
-using Wolverine.Postgresql;
 
 namespace NotificationService.Persistence;
 
@@ -27,18 +24,22 @@ public static class DependencyInjection
         var connectionString = builder.Configuration.GetConnectionString("SQL")
                ?? throw new InvalidOperationException("Connection string 'SQL' not found.");
 
-        // Add Wolverine to the host and configure its EF Core integration
+        // Configure tenant database settings with service prefix
+        services.Configure<TenantDatabaseSettings>(options =>
+        {
+            options.ServicePrefix = "notification";
+            options.CentralConnectionString = connectionString;
+            options.UseSeparateDatabases = true;
+        });
+
+        // Add multi-tenancy support - DbContext is resolved per-request based on JWT tenant claim
+        services.AddMultiTenancy<DataContext>(builder.Configuration);
+
+        // Add Wolverine for messaging (without PostgreSQL outbox - using in-memory messaging only)
         builder.UseWolverine(opts =>
         {
-            // Configure Wolverine durable message persistence in PostgreSQL
-            opts.PersistMessagesWithPostgresql(connectionString);
-
             opts.Policies.UseDurableLocalQueues();
-
-            // You can also add more specific policies for resilience
-            opts.Policies.UseDurableOutboxOnAllSendingEndpoints();
-
-            // Ensure Wolverine discovers handlers in the Application assembly
+            
             try
             {
                 var applicationAssembly = Assembly.Load("NotificationService.Application");
@@ -46,15 +47,8 @@ public static class DependencyInjection
             }
             catch
             {
-                // If the assembly can't be loaded by name, Wolverine will still scan the entry assembly.
+                // Assembly may not be loaded yet
             }
-        });
-
-        // Register DbContext with Wolverine integration
-        builder.Services.AddDbContextWithWolverineIntegration<DataContext>(options =>
-        {
-            options.UseNpgsql(connectionString);
-            options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
 
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
@@ -65,8 +59,8 @@ public static class DependencyInjection
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        // Add database migration service to run at startup
-        services.AddSimpleDatabaseMigration<DataContext>();
+        // Note: Database migrations for tenant databases are handled when tenants are created
+        // via the TenantCreatedEvent handler, not at service startup
 
         return services;
     }
