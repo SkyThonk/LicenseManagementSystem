@@ -1,5 +1,7 @@
 using Common.Infrastructure.Messaging;
 using Common.Infrastructure.Migration;
+using LicenseService.Application.Common.Interfaces;
+using LicenseService.Infrastructure.BackgroundJobs;
 using LicenseService.Infrastructure.EventHandlers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +38,12 @@ public static class DependencyInjection
         // Add Redis event consumer for tenant events
         services.AddRedisEventConsumer(builder.Configuration);
         services.AddTenantEventHandler<LicenseTenantEventHandler>();
+
+        // Configure and register license renewal background job
+        services.Configure<LicenseRenewalJobSettings>(
+            builder.Configuration.GetSection(LicenseRenewalJobSettings.SectionName));
+        services.AddScoped<ILicenseRenewalProcessor, LicenseRenewalProcessor>();
+        services.AddHostedService<LicenseRenewalBackgroundJob>();
 
         return services;
     }

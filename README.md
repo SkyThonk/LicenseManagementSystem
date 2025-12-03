@@ -260,6 +260,35 @@ POST   /api/licenses/{id}/approve # Approve license
 POST   /api/licenses/{id}/renew   # Initiate renewal
 ```
 
+### 5. Background Jobs
+
+The License Service includes a background job for processing license renewals automatically.
+
+#### License Renewal Background Job
+
+A `BackgroundService` runs periodically to process pending license renewals. It is configured via `appsettings.json`:
+
+```json
+{
+  "LicenseRenewalJob": {
+    "Enabled": true,
+    "IntervalMinutes": 60,
+    "InitialDelaySeconds": 30
+  }
+}
+```
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `Enabled` | Enable/disable the background job | `true` |
+| `IntervalMinutes` | Interval between processing runs | `60` |
+| `InitialDelaySeconds` | Delay before first run after startup | `30` |
+
+> ⚠️ **Note**: The current implementation of the background job runs against the **main database only** and does **not iterate through individual tenant databases**. This means it will not process renewals for tenant-specific data as intended in a multi-tenant environment. To fully support multi-tenancy, the job would need to:
+> 1. Retrieve the list of active tenants from the `TenantService`
+> 2. For each tenant, establish a connection to their isolated database
+> 3. Process pending renewals within that tenant's context
+
 ---
 
 ## 🛠️ Technology Stack
