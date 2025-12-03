@@ -9,43 +9,52 @@ namespace Common.Infrastructure.Messaging;
 public static class MessagingExtensions
 {
     /// <summary>
-    /// Adds Kafka event publishing capability to the service.
+    /// Adds Redis event publishing capability to the service.
     /// Call this in services that need to publish events (e.g., TenantService).
     /// </summary>
-    public static IServiceCollection AddKafkaEventPublisher(
+    public static IServiceCollection AddRedisEventPublisher(
         this IServiceCollection services,
         IConfiguration configuration,
         string serviceName)
     {
-        services.Configure<KafkaSettings>(configuration.GetSection(KafkaSettings.SectionName));
+        services.Configure<RedisMessagingSettings>(options =>
+        {
+            var redisConnectionString = configuration.GetConnectionString("redis");
+            if (!string.IsNullOrEmpty(redisConnectionString))
+            {
+                options.ConnectionString = redisConnectionString;
+            }
+        });
         
         services.AddSingleton<IEventPublisher>(sp =>
         {
-            var settings = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<KafkaSettings>>();
-            var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<KafkaEventPublisher>>();
-            return new KafkaEventPublisher(settings, logger, serviceName);
+            var settings = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<RedisMessagingSettings>>();
+            var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RedisEventPublisher>>();
+            return new RedisEventPublisher(settings, logger, serviceName);
         });
 
         return services;
     }
 
     /// <summary>
-    /// Adds Kafka event consumer capability to the service.
+    /// Adds Redis event consumer capability to the service.
     /// Call this in services that need to consume tenant events.
     /// The service must also register an ITenantEventHandler implementation.
     /// </summary>
-    public static IServiceCollection AddKafkaEventConsumer(
+    public static IServiceCollection AddRedisEventConsumer(
         this IServiceCollection services,
-        IConfiguration configuration,
-        string consumerGroupId)
+        IConfiguration configuration)
     {
-        services.Configure<KafkaSettings>(options =>
+        services.Configure<RedisMessagingSettings>(options =>
         {
-            configuration.GetSection(KafkaSettings.SectionName).Bind(options);
-            options.ConsumerGroupId = consumerGroupId;
+            var redisConnectionString = configuration.GetConnectionString("redis");
+            if (!string.IsNullOrEmpty(redisConnectionString))
+            {
+                options.ConnectionString = redisConnectionString;
+            }
         });
 
-        services.AddHostedService<KafkaTenantEventConsumer>();
+        services.AddHostedService<RedisTenantEventConsumer>();
 
         return services;
     }

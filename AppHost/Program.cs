@@ -32,15 +32,6 @@ var paymentServiceConnectionString = builder.Configuration["PaymentService:Conne
 // Get Redis connection string for external Redis Cloud
 var redisConnectionString = builder.Configuration["ConnectionStrings:redis"];
 
-// Get Kafka configuration
-var kafkaBootstrapServers = builder.Configuration["Kafka:BootstrapServers"];
-var kafkaSecurityProtocol = builder.Configuration["Kafka:SecurityProtocol"];
-var kafkaSaslMechanism = builder.Configuration["Kafka:SaslMechanism"];
-var kafkaSaslUsername = builder.Configuration["Kafka:SaslUsername"];
-var kafkaSaslPassword = builder.Configuration["Kafka:SaslPassword"];
-
-
-
 // Register TenantService microservice with centralized configuration and fixed ports
 var tenantServiceApi = builder.AddProject<Projects.TenantService_Api>("TenantService")
     .WithHttpEndpoint(port: 5002, name: "tenantservice-http");
@@ -55,11 +46,6 @@ if (!builder.Environment.IsDevelopment())
 tenantServiceApi = tenantServiceApi
     .WithEnvironment("ConnectionStrings__SQL", tenantServiceConnectionString)
     .WithEnvironment("ConnectionStrings__redis", redisConnectionString)
-    .WithEnvironment("Kafka__BootstrapServers", kafkaBootstrapServers)
-    .WithEnvironment("Kafka__SecurityProtocol", kafkaSecurityProtocol)
-    .WithEnvironment("Kafka__SaslMechanism", kafkaSaslMechanism)
-    .WithEnvironment("Kafka__SaslUsername", kafkaSaslUsername)
-    .WithEnvironment("Kafka__SaslPassword", kafkaSaslPassword)
     .WithEnvironment("JwtSettings__Secret", jwtSecret)
     .WithEnvironment("JwtSettings__ExpiryMinutes", jwtExpiryMinutes)
     .WithEnvironment("JwtSettings__Issuer", jwtIssuer)
@@ -76,11 +62,6 @@ if (!builder.Environment.IsDevelopment())
 licenseServiceApi = licenseServiceApi
     .WithEnvironment("ConnectionStrings__SQL", licenseServiceConnectionString)
     .WithEnvironment("ConnectionStrings__redis", redisConnectionString)
-    .WithEnvironment("Kafka__BootstrapServers", kafkaBootstrapServers)
-    .WithEnvironment("Kafka__SecurityProtocol", kafkaSecurityProtocol)
-    .WithEnvironment("Kafka__SaslMechanism", kafkaSaslMechanism)
-    .WithEnvironment("Kafka__SaslUsername", kafkaSaslUsername)
-    .WithEnvironment("Kafka__SaslPassword", kafkaSaslPassword)
     .WithEnvironment("JwtSettings__Secret", jwtSecret)
     .WithEnvironment("JwtSettings__ExpiryMinutes", jwtExpiryMinutes)
     .WithEnvironment("JwtSettings__Issuer", jwtIssuer)
@@ -97,11 +78,6 @@ if (!builder.Environment.IsDevelopment())
 documentServiceApi = documentServiceApi
     .WithEnvironment("ConnectionStrings__SQL", documentServiceConnectionString)
     .WithEnvironment("ConnectionStrings__redis", redisConnectionString)
-    .WithEnvironment("Kafka__BootstrapServers", kafkaBootstrapServers)
-    .WithEnvironment("Kafka__SecurityProtocol", kafkaSecurityProtocol)
-    .WithEnvironment("Kafka__SaslMechanism", kafkaSaslMechanism)
-    .WithEnvironment("Kafka__SaslUsername", kafkaSaslUsername)
-    .WithEnvironment("Kafka__SaslPassword", kafkaSaslPassword)
     .WithEnvironment("JwtSettings__Secret", jwtSecret)
     .WithEnvironment("JwtSettings__ExpiryMinutes", jwtExpiryMinutes)
     .WithEnvironment("JwtSettings__Issuer", jwtIssuer)
@@ -118,11 +94,6 @@ if (!builder.Environment.IsDevelopment())
 notificationServiceApi = notificationServiceApi
     .WithEnvironment("ConnectionStrings__SQL", notificationServiceConnectionString)
     .WithEnvironment("ConnectionStrings__redis", redisConnectionString)
-    .WithEnvironment("Kafka__BootstrapServers", kafkaBootstrapServers)
-    .WithEnvironment("Kafka__SecurityProtocol", kafkaSecurityProtocol)
-    .WithEnvironment("Kafka__SaslMechanism", kafkaSaslMechanism)
-    .WithEnvironment("Kafka__SaslUsername", kafkaSaslUsername)
-    .WithEnvironment("Kafka__SaslPassword", kafkaSaslPassword)
     .WithEnvironment("JwtSettings__Secret", jwtSecret)
     .WithEnvironment("JwtSettings__ExpiryMinutes", jwtExpiryMinutes)
     .WithEnvironment("JwtSettings__Issuer", jwtIssuer)
@@ -139,17 +110,12 @@ if (!builder.Environment.IsDevelopment())
 paymentServiceApi = paymentServiceApi
     .WithEnvironment("ConnectionStrings__SQL", paymentServiceConnectionString)
     .WithEnvironment("ConnectionStrings__redis", redisConnectionString)
-    .WithEnvironment("Kafka__BootstrapServers", kafkaBootstrapServers)
-    .WithEnvironment("Kafka__SecurityProtocol", kafkaSecurityProtocol)
-    .WithEnvironment("Kafka__SaslMechanism", kafkaSaslMechanism)
-    .WithEnvironment("Kafka__SaslUsername", kafkaSaslUsername)
-    .WithEnvironment("Kafka__SaslPassword", kafkaSaslPassword)
     .WithEnvironment("JwtSettings__Secret", jwtSecret)
     .WithEnvironment("JwtSettings__ExpiryMinutes", jwtExpiryMinutes)
     .WithEnvironment("JwtSettings__Issuer", jwtIssuer)
     .WithEnvironment("JwtSettings__Audience", jwtAudience);
 
-// Register Web UI project with reference to TenantService for API calls
+// Register Web UI project with reference to all services for API calls
 var webApp = builder.AddProject<Projects.LicenseManagement_Web>("WebApp")
     .WithHttpEndpoint(port: 5000, name: "webapp-http")
     .WithReference(tenantServiceApi)
@@ -161,7 +127,11 @@ var webApp = builder.AddProject<Projects.LicenseManagement_Web>("WebApp")
     .WithEnvironment("LicenseServiceUrl", "http://localhost:5003")
     .WithEnvironment("DocumentServiceUrl", "http://localhost:5004")
     .WithEnvironment("NotificationServiceUrl", "http://localhost:5005")
-    .WithEnvironment("PaymentServiceUrl", "http://localhost:5006");
+    .WithEnvironment("PaymentServiceUrl", "http://localhost:5006")
+    .WithEnvironment("JwtSettings__Secret", jwtSecret)
+    .WithEnvironment("JwtSettings__ExpiryMinutes", jwtExpiryMinutes)
+    .WithEnvironment("JwtSettings__Issuer", jwtIssuer)
+    .WithEnvironment("JwtSettings__Audience", jwtAudience);
 
 if (!builder.Environment.IsDevelopment())
 {

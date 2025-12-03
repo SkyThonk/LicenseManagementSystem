@@ -11,6 +11,7 @@ using LicenseService.Persistence.Common;
 using LicenseService.Application.Common.Interfaces;
 using LicenseService.Application.Common.Interfaces.Repositories;
 using LicenseService.Persistence.Repositories;
+using LicenseService.Persistence.Services;
 using Common.Domain.Abstractions;
 using Common.Infrastructure.Migration;
 
@@ -55,6 +56,9 @@ public static class DependencyInjection
 
         // Register UnitOfWork
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        // Register DomainEventDispatcher
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
         // Register Repositories
         services.AddScoped<ILicenseRepository, LicenseRepository>();

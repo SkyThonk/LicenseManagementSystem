@@ -52,5 +52,8 @@
     <Project Path="src/Services/PaymentService/PaymentService.Persistence/PaymentService.Persistence.csproj" />
     <Project Path="src/Services/PaymentService/PaymentService.Tests/PaymentService.Tests.csproj" />
   </Folder>
+  <Folder Name="/src/Web/">
+    <Project Path="src/Web/LicenseManagement.Web.csproj" />
+  </Folder>
   <Project Path="AppHost/AppHost.csproj" />
 </Solution>

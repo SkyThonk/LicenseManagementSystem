@@ -1,6 +1,7 @@
 using TenantService.Application.Common.Interfaces.Messaging;
 using TenantService.Infrastructure.Messaging;
 using TenantService.Infrastructure.Authentication;
+using Common.Infrastructure.Messaging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,7 +20,16 @@ public static class DependencyInjection
         // Also configure Common infrastructure JwtSettings so the Common JwtTokenGenerator
         // can receive IOptions<JwtSettings> when injected.
         services.Configure<Common.Infrastructure.Authentication.JwtSettings>(builder.Configuration.GetSection(Common.Infrastructure.Authentication.JwtSettings.SectionName));
-        services.Configure<KafkaSettings>(builder.Configuration.GetSection(KafkaSettings.SectionName));
+        
+        // Configure Redis messaging settings
+        services.Configure<RedisMessagingSettings>(options =>
+        {
+            var redisConnectionString = builder.Configuration.GetConnectionString("redis");
+            if (!string.IsNullOrEmpty(redisConnectionString))
+            {
+                options.ConnectionString = redisConnectionString;
+            }
+        });
 
         // TenantService-specific token generator registration
         services.AddSingleton<TenantService.Application.Common.Interfaces.Authentication.IJwtTokenGenerator, JwtTokenGenerator>();
@@ -38,9 +48,8 @@ public static class DependencyInjection
             options.Configuration = builder.Configuration.GetConnectionString("redis");
         });
 
-        // Add Kafka producer and event publisher
-        services.AddSingleton<IKafkaProducer, KafkaProducer>();
-        services.AddSingleton<IKafkaAdmin, KafkaAdmin>();
+        // Add Redis producer and event publisher
+        services.AddSingleton<IRedisProducer, RedisProducer>();
         services.AddScoped<ITenantEventPublisher, TenantEventPublisher>();
 
         return services;

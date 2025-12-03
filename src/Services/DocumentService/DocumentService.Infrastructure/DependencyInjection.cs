@@ -21,8 +21,15 @@ public static class DependencyInjection
         services.Configure<Common.Infrastructure.Authentication.JwtSettings>(
             builder.Configuration.GetSection(Common.Infrastructure.Authentication.JwtSettings.SectionName));
 
-        // Configure Kafka settings for event consumption
-        services.Configure<KafkaSettings>(builder.Configuration.GetSection(KafkaSettings.SectionName));
+        // Configure Redis messaging settings for event consumption
+        services.Configure<RedisMessagingSettings>(options =>
+        {
+            var redisConnectionString = builder.Configuration.GetConnectionString("redis");
+            if (!string.IsNullOrEmpty(redisConnectionString))
+            {
+                options.ConnectionString = redisConnectionString;
+            }
+        });
 
         // Register Common JWT token generator
         services.AddSingleton<Common.Application.Interfaces.Authentication.IJwtTokenGenerator,
@@ -40,9 +47,9 @@ public static class DependencyInjection
             options.Configuration = builder.Configuration.GetConnectionString("redis");
         });
 
-        // Register Kafka tenant event consumer (for per-tenant database provisioning)
+        // Register Redis tenant event consumer (for per-tenant database provisioning)
         services.AddSingleton<ITenantEventHandler, DocumentTenantEventHandler>();
-        services.AddHostedService<KafkaTenantEventConsumer>();
+        services.AddHostedService<RedisTenantEventConsumer>();
 
         return services;
     }

@@ -1,34 +1,34 @@
 using System.Text.Json;
 using Common.Domain.Events;
+using Common.Infrastructure.Messaging;
 using TenantService.Application.Common.Interfaces.Messaging;
 using Microsoft.Extensions.Logging;
 
 namespace TenantService.Infrastructure.Messaging;
 
 /// <summary>
-/// Kafka-based implementation of tenant event publisher.
-/// Publishes tenant lifecycle events to the message broker.
+/// Redis-based implementation of tenant event publisher.
+/// Publishes tenant lifecycle events to Redis Pub/Sub.
 /// </summary>
 public class TenantEventPublisher : ITenantEventPublisher
 {
-    private readonly IKafkaProducer _kafkaProducer;
+    private readonly IRedisProducer _redisProducer;
     private readonly ILogger<TenantEventPublisher> _logger;
-    private const string TenantEventsTopic = "tenant-events";
+    private const string TenantEventsChannel = "tenant-events";
 
     public TenantEventPublisher(
-        IKafkaProducer kafkaProducer,
+        IRedisProducer redisProducer,
         ILogger<TenantEventPublisher> logger)
     {
-        _kafkaProducer = kafkaProducer;
+        _redisProducer = redisProducer;
         _logger = logger;
     }
 
     public async Task PublishTenantCreatedAsync(TenantCreatedEvent @event, CancellationToken cancellationToken = default)
     {
         var envelope = CreateEnvelope(@event);
-        var key = @event.TenantId.ToString();
         
-        await _kafkaProducer.ProduceAsync(TenantEventsTopic, key, JsonSerializer.Serialize(envelope));
+        await _redisProducer.PublishAsync(TenantEventsChannel, JsonSerializer.Serialize(envelope));
         
         _logger.LogInformation(
             "Published TenantCreatedEvent for tenant {TenantId} ({AgencyCode})",
@@ -39,9 +39,8 @@ public class TenantEventPublisher : ITenantEventPublisher
     public async Task PublishTenantUpdatedAsync(TenantUpdatedEvent @event, CancellationToken cancellationToken = default)
     {
         var envelope = CreateEnvelope(@event);
-        var key = @event.TenantId.ToString();
         
-        await _kafkaProducer.ProduceAsync(TenantEventsTopic, key, JsonSerializer.Serialize(envelope));
+        await _redisProducer.PublishAsync(TenantEventsChannel, JsonSerializer.Serialize(envelope));
         
         _logger.LogInformation(
             "Published TenantUpdatedEvent for tenant {TenantId}",
@@ -51,9 +50,8 @@ public class TenantEventPublisher : ITenantEventPublisher
     public async Task PublishTenantDeletedAsync(TenantDeletedEvent @event, CancellationToken cancellationToken = default)
     {
         var envelope = CreateEnvelope(@event);
-        var key = @event.TenantId.ToString();
         
-        await _kafkaProducer.ProduceAsync(TenantEventsTopic, key, JsonSerializer.Serialize(envelope));
+        await _redisProducer.PublishAsync(TenantEventsChannel, JsonSerializer.Serialize(envelope));
         
         _logger.LogInformation(
             "Published TenantDeletedEvent for tenant {TenantId}",

@@ -29,8 +29,8 @@ public static class DependencyInjection
             options.Configuration = builder.Configuration.GetConnectionString("redis");
         });
 
-        // Add Kafka event consumer for tenant events
-        services.AddKafkaEventConsumer(builder.Configuration, "license-service");
+        // Add Redis event consumer for tenant events
+        services.AddRedisEventConsumer(builder.Configuration);
         services.AddTenantEventHandler<LicenseTenantEventHandler>();
 
         return services;
